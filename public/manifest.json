@@ -1,7 +1,7 @@
 {
-  "name": "Code Editor PWA",
-  "short_name": "EditorPWA",
-  "description": "A simple, installable code editor built with CodeMirror 6.",
+  "name": "Code Editor",
+  "short_name": "CodeEditor",
+  "description": "A simple code editor built with CodeMirror 6.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e1e1e",
