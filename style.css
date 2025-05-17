@@ -21,15 +21,14 @@
   --theme-modal-bg: #2a2d38;
   --theme-modal-text: #e6e9ef;
   --theme-modal-key-text: #b5e0ff;
-  --theme-modal-row-hover-bg: rgba(42, 45, 56, 0.5);
+  --theme-modal-row-hover-bg: rgba(42, 45, 56, 0.5); /* Used for language list hover */
   --theme-button-hover-bg: var(--theme-blue-accent);
   --theme-button-hover-text: #ffffff;
   --theme-button-icon-hover-text: #ffffff;
-  --theme-cm-gutter-bg: var(--theme-explorer-bg); /* Default dark gutter */
+  --theme-cm-gutter-bg: var(--theme-explorer-bg);
   --theme-cm-gutter-text: var(--theme-text-secondary);
   --theme-cm-gutter-border: var(--theme-border-color);
-  --theme-cm-activeline-gutter-bg: rgba(80,80,110,0.18); /* From your original active line */
-
+  --theme-cm-activeline-gutter-bg: rgba(80,80,110,0.18);
 
   --font-family-ui: 'Segoe UI', sans-serif;
   --font-family-editor: 'Fira Code', 'Consolas', 'Menlo', monospace;
@@ -44,7 +43,7 @@
   --theme-explorer-bg: #f3f3f3;
   --theme-panel-header-bg: #e0e0e0;
   --theme-panel-header-text: #555555;
-  --theme-blue-accent: #007acc;
+  /* --theme-blue-accent: #007acc; */ /* Already defined, can be overridden if needed */
   --theme-text-primary: #1e1e1e;
   --theme-text-secondary: #555555;
   --theme-text-placeholder: #777777;
@@ -57,11 +56,11 @@
   --theme-modal-bg: #ffffff;
   --theme-modal-text: #333333;
   --theme-modal-key-text: #005a9e;
-  --theme-modal-row-hover-bg: rgba(220, 220, 220, 0.5);
-  --theme-button-hover-bg: var(--theme-blue-accent);
-  --theme-button-hover-text: #ffffff;
-  --theme-button-icon-hover-text: #ffffff;
-  --theme-cm-gutter-bg: #f0f0f0; /* Light gutter */
+  --theme-modal-row-hover-bg: rgba(220, 220, 220, 0.5); /* Used for language list hover */
+  /* --theme-button-hover-bg: var(--theme-blue-accent); */
+  /* --theme-button-hover-text: #ffffff; */
+  /* --theme-button-icon-hover-text: #ffffff; */
+  --theme-cm-gutter-bg: #f0f0f0;
   --theme-cm-gutter-text: #888888;
   --theme-cm-gutter-border: #dddddd;
   --theme-cm-activeline-gutter-bg: #e0e0ff;
@@ -89,7 +88,7 @@ html, body {
   border-bottom: 1px solid var(--theme-border-color);
   font-family: var(--font-family-ui);
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  z-index: 1000;
+  z-index: 1000; /* Ensure menu is on top */
   position: relative;
   flex-shrink: 0;
   transition: background-color 0.3s, border-color 0.3s;
@@ -129,15 +128,15 @@ html, body {
   display: none;
   position: absolute;
   left: 8px;
-  top: 32px;
+  top: 32px; /* Position below menu bar */
   background: var(--theme-sidebar-bg);
-  min-width: 220px;
+  min-width: 240px; /* Slightly wider for new options */
   border: 1px solid var(--theme-border-color);
   box-shadow: 0 6px 18px rgba(0,0,0,0.25);
   border-radius: 5px;
   font-family: var(--font-family-ui);
   animation: menuFadeIn .15s ease-out;
-  z-index: 1001;
+  z-index: 1001; /* Above menu bar but below modals */
   padding: 6px 0;
   transition: background-color 0.3s, border-color 0.3s;
 }
@@ -186,15 +185,20 @@ html, body {
   transition: color 0.12s;
 }
 
-.menu-dropdown button span.shortcut {
+.menu-dropdown button span.shortcut,
+.menu-dropdown button span#autosave-status-menu { /* Style for autosave status in menu */
   margin-left: auto;
   color: var(--theme-text-placeholder);
   font-size: 12px;
   opacity: 0.8;
   padding-left: 16px;
-  font-family: var(--font-family-editor);
+  font-family: var(--font-family-editor); /* Consistent font for shortcuts */
   transition: color 0.12s;
 }
+.menu-dropdown button span#autosave-status-menu {
+    font-style: italic;
+}
+
 
 .menu-dropdown button:hover,
 .menu-dropdown button:focus {
@@ -204,7 +208,7 @@ html, body {
 }
 .menu-dropdown button:hover i,
 .menu-dropdown button:focus i {
-    color: var(--theme-button-icon-hover-text);
+    color: var(--theme-button-icon-hover-text); /* Ensure icon color changes on hover */
 }
 
 
@@ -213,16 +217,16 @@ html, body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Modal Styles */
+/* Modal Styles (General) */
 .modal-backdrop {
-  display: none;
+  display: none; /* Hidden by default */
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
   background: var(--theme-modal-backdrop-bg);
-  z-index: 2000;
+  z-index: 2000; /* High z-index to appear on top */
   align-items: center;
   justify-content: center;
   opacity: 0;
@@ -230,28 +234,29 @@ html, body {
 }
 
 .modal-backdrop.active {
-  display: flex;
+  display: flex; /* Show when active */
   opacity: 1;
 }
 
-.shortcut-modal {
+/* Base styles for different modal types */
+.shortcut-modal, .language-modal {
   background: var(--theme-modal-bg);
   border-radius: 6px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.3);
   padding: 28px 38px 24px 38px;
   min-width: 350px;
-  max-width: 90vw;
+  max-width: 90vw; /* Responsive max width */
   color: var(--theme-modal-text);
   font-family: var(--font-family-ui);
   font-size: 14px;
   animation: modalScaleIn .20s ease-out;
-  max-height: 85vh;
-  overflow-y: auto;
+  max-height: 85vh; /* Prevent modal from being too tall */
+  overflow-y: auto; /* Scroll if content overflows */
   position: relative;
   transition: background-color 0.3s, color 0.3s;
 }
 
-.shortcut-modal h2 {
+.shortcut-modal h2, .language-modal h2 {
   margin-top: 0;
   margin-bottom: 20px;
   font-size: 20px;
@@ -262,6 +267,28 @@ html, body {
   transition: color 0.3s;
 }
 
+.close-modal { /* Common style for close buttons on modals */
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 22px;
+  color: var(--theme-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.13s, transform 0.1s;
+  opacity: 0.7;
+  padding: 5px;
+  line-height: 1;
+}
+
+.close-modal:hover {
+  color: #f27878; /* Reddish color on hover for close */
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Shortcut Modal Specifics */
 .shortcut-modal .shortcut-list {
   width: 100%;
   margin-top: 8px;
@@ -299,38 +326,50 @@ html, body {
   background: var(--theme-modal-row-hover-bg);
 }
 
-.shortcut-modal .close-modal {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 22px;
-  color: var(--theme-text-secondary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.13s, transform 0.1s;
-  opacity: 0.7;
-  padding: 5px;
-  line-height: 1;
+/* Language Modal Specifics */
+.language-modal {
+  min-width: 300px; /* Adjust as needed */
+  max-width: 500px;
 }
 
-.shortcut-modal .close-modal:hover {
-  color: #f27878;
-  opacity: 1;
-  transform: scale(1.1);
+.language-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Space between language items */
+  max-height: 60vh; /* Limit height and allow scroll */
+  overflow-y: auto;
 }
+
+.language-item {
+  padding: 10px 15px;
+  background-color: transparent;
+  border: 1px solid var(--theme-border-color);
+  color: var(--theme-modal-text);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  text-align: left;
+  font-size: 14px;
+}
+
+.language-item:hover {
+  background-color: var(--theme-modal-row-hover-bg);
+  border-color: var(--theme-blue-accent);
+  color: var(--theme-text-primary); /* Brighter text on hover */
+}
+
 
 @keyframes modalScaleIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
 
-@media (max-width: 500px) {
-  .shortcut-modal {
+@media (max-width: 500px) { /* Responsive adjustments for smaller screens */
+  .shortcut-modal, .language-modal {
     padding: 20px;
     min-width: 90vw;
   }
-  .shortcut-modal h2 {
+  .shortcut-modal h2, .language-modal h2 {
     font-size: 18px;
   }
 }
@@ -338,7 +377,7 @@ html, body {
 /* Main Application Layout Styles */
 #app-container {
   display: flex;
-  height: calc(100vh - 33px); 
+  height: calc(100vh - 33px); /* Full height minus menu bar */
   width: 100vw;
   position: relative;
   background-color: var(--theme-bg); 
@@ -439,7 +478,7 @@ html, body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  min-width: 0; /* Important for flexbox to prevent overflow */
   background: var(--theme-bg); 
   transition: background-color 0.3s;
 }
@@ -450,9 +489,10 @@ html, body {
   background: var(--theme-explorer-bg); 
   height: 35px;
   flex-shrink: 0;
-  overflow-x: auto;
+  overflow-x: auto; /* Allow horizontal scrolling for many tabs */
   transition: background-color 0.3s, border-color 0.3s;
 }
+/* Hide scrollbar for tabs, but still scrollable */
 .tabs::-webkit-scrollbar { display: none; }
 .tabs { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -466,7 +506,7 @@ html, body {
   border-right: 1px solid var(--theme-border-color);
   color: var(--theme-text-secondary);
   background: var(--theme-tab-inactive-bg);
-  white-space: nowrap;
+  white-space: nowrap; /* Prevent tab name from wrapping */
   position: relative;
   gap: 6px;
   transition: background-color 0.1s, color 0.1s, border-color 0.3s;
@@ -491,17 +531,54 @@ html, body {
   opacity: 1;
   background-color: rgba(128,128,128,0.25); 
 }
-.tab i {
+.tab i { /* Icon within tab */
   font-size: 16px;
   color: inherit; 
 }
 
 .editor-pane {
   flex-grow: 1;
-  overflow: hidden;
+  overflow: hidden; /* CodeMirror handles its own scrolling */
   display: flex; 
   position: relative;
 }
+
+/* Status Bar Styles */
+.status-bar {
+  height: 22px;
+  background-color: var(--theme-sidebar-bg); /* Consistent with menu bar */
+  border-top: 1px solid var(--theme-border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  font-size: 12px;
+  color: var(--theme-text-secondary);
+  flex-shrink: 0; /* Prevent shrinking */
+  gap: 15px; /* Space between status bar items */
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+  user-select: none; /* Prevent text selection in status bar */
+}
+
+.status-bar-item {
+  padding: 2px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.status-bar-item.interactive { /* For clickable items like language */
+  cursor: pointer;
+}
+
+.status-bar-item.interactive:hover {
+  background-color: var(--theme-activitybar-icons-hover-bg);
+  color: var(--theme-text-primary);
+}
+#status-autosave {
+    font-style: italic;
+    font-size: 11px;
+    opacity: 0.8;
+}
+
 
 /* CodeMirror Specific Overrides */
 .cm-editor {
@@ -512,7 +589,7 @@ html, body {
 }
 .cm-scroller {
   font-family: var(--font-family-editor) !important;
-  font-size: 15px !important;
+  font-size: 15px !important; /* Default editor font size */
 }
 .cm-focused {
   outline: none !important; 
@@ -540,28 +617,54 @@ body.dragover-active {
 
 /* Styles for the tab name input during rename */
 .tab-name-input {
-  font-size: 1em;
-  font-family: inherit;
-  width: 95%;
-  border: 1px solid #409eff;
+  font-size: 1em; /* Inherit tab font size */
+  font-family: inherit; /* Inherit tab font family */
+  width: 95%; /* Take most of the tab width */
+  border: 1px solid var(--theme-blue-accent); /* Highlight with accent color */
   border-radius: 4px;
-  padding: 0 4px;
-  background: #fff;
-  color: #333;
+  padding: 0 4px; /* Small padding */
+  background: var(--theme-bg); /* Match editor background */
+  color: var(--theme-text-primary); /* Match editor text */
   outline: none;
-  margin-left: 2px;
+  margin-left: 2px; /* Align with where text was */
 }
 
-.tab.active .tab-name-input {
-  background: #e6f7ff;
-  color: #222;
+.tab.active .tab-name-input { /* Slightly different style if active tab is renamed */
+  background: var(--theme-tab-active-bg);
 }
 
 .tab-name-display {
     display: flex;
     align-items: center;
     gap: 4px;
-    cursor: pointer;
-    user-select: none;
-    flex: 1 1 auto;
+    cursor: pointer; /* Indicate it's clickable for rename */
+    user-select: none; /* Prevent text selection on name part */
+    flex: 1 1 auto; /* Allow it to take available space */
+}
+
+.status-bar {
+  height: 22px; /* Adjust as needed */
+  background-color: var(--theme-sidebar-bg); /* Same as menubar for consistency */
+  border-top: 1px solid var(--theme-border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  font-size: 12px;
+  color: var(--theme-text-secondary);
+  flex-shrink: 0;
+  gap: 20px; /* Space between language and encoding */
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+
+#status-language,
+#status-encoding {
+  cursor: default; /* Default cursor, will change if interactive later */
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+#status-language:hover,
+#status-encoding:hover {
+  background-color: var(--theme-activitybar-icons-hover-bg); /* Subtle hover */
+  color: var(--theme-text-primary);
 }

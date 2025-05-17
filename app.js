@@ -16,7 +16,7 @@ import { python } from "@codemirror/lang-python";
 import { json, jsonParseLinter } from "@codemirror/lang-json";
 import { xml } from "@codemirror/lang-xml";
 import { markdown } from "@codemirror/lang-markdown";
-import { languages } from "@codemirror/language-data";
+import { languages as cmLanguages } from "@codemirror/language-data"; // Renamed to avoid conflict
 import { oneDark } from "@codemirror/theme-one-dark";
 import { searchKeymap, highlightSelectionMatches, search, openSearchPanel } from "@codemirror/search";
 import { closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap } from "@codemirror/autocomplete";
@@ -25,99 +25,111 @@ import * as Language from "@codemirror/language";
 const {
     defaultHighlightStyle, bracketMatching,
     foldGutter, foldKeymap, codeFolding, indentOnInput, HighlightStyle, syntaxHighlighting
-    // 'tags' will be imported directly from @lezer/highlight
 } = Language;
 
-// Direct import for 'tags' from @lezer/highlight
 import { tags } from "@lezer/highlight";
-
 import { lintKeymap, lintGutter } from "@codemirror/lint";
 
-const initialFiles = [
-  {
-    name: "index.html",
-    icon: "mdi-language-html5",
-    langFunction: () => html({ matchClosingTags: true, autoCloseTags: true }),
-    content: `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>My Project</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <h1>Hello World!</h1>
-    <p>This is a CodeMirror 6 editor. Example: <span class="example">example span</span></p>
-    <script type="module" src="app.js"></script>
-  </body>
-</html>`
-  },
-  {
-    name: "style.css",
-    icon: "mdi-language-css3",
-    langFunction: css,
-    content: `body {\n  background: #f0f0f0;\n  color: #333;\n  font-family: sans-serif;\n  display: flex;\n  flex-direction: column; \n  justify-content: center;\n  align-items: center;\n  height: 100vh;\n  margin: 0;\n  padding: 20px;\n  box-sizing: border-box;\n}\n\nh1 {\n  color: steelblue;\n  margin-bottom: 10px;\n}\n\np {\n  color: #555;\n}`
-  },
-  {
-    name: "app.js",
-    icon: "mdi-language-javascript",
-    langFunction: javascript,
-    content: `// Tip: You can edit this file too!\ndocument.addEventListener('DOMContentLoaded', () => {\n  console.log("Editor Initialized and app.js (this file) is running!");\n});`
-  }
-];
+// --- Initial Files and Theme Configuration ---
+const initialFiles = [ /* Content deliberately empty for this example, can be populated */ ];
 
-let currentThemeIsDark = true;
+let currentThemeIsDark = true; // Will be overridden by userSettings
 let themeCompartment = new Compartment();
 let languageCompartment = new Compartment();
 
-// Use the directly imported 'tags' object
+// --- User Settings and Autosave ---
+const DEFAULT_SETTINGS = {
+    theme: 'dark', // 'dark' or 'light'
+    autosaveEnabled: true,
+    autosaveInterval: 30000, // milliseconds (30 seconds)
+    // Add other settings here in the future, e.g., fontSize, tabSize
+};
+let userSettings = { ...DEFAULT_SETTINGS };
+let autosaveIntervalId = null;
+
+// --- Language Definitions for Language Changer ---
+const availableLanguages = [
+    { name: "JavaScript", extension: ".js", langFunc: () => javascript() },
+    { name: "HTML", extension: ".html", langFunc: () => html({ matchClosingTags: true, autoCloseTags: true }) },
+    { name: "CSS", extension: ".css", langFunc: () => css() },
+    { name: "JSON", extension: ".json", langFunc: () => json() },
+    { name: "Python", extension: ".py", langFunc: () => python() },
+    { name: "XML", extension: ".xml", langFunc: () => xml() },
+    { name: "Markdown", extension: ".md", langFunc: () => markdown({ base: javascript, codeLanguages: cmLanguages }) },
+    { name: "Plain Text", extension: ".txt", langFunc: () => [] } // For plain text
+];
+
+
+// Custom highlighter for the light theme
 const customLightThemeHighlighter = HighlightStyle.define([
     { tag: tags.keyword, color: "#d73a49" },
     { tag: tags.atom, color: "#6f42c1" },
     { tag: tags.number, color: "#005cc5" },
     { tag: tags.definition(tags.variableName), color: "#24292e", fontWeight: "bold" },
-    { tag: tags.variableName, color: "#e36209" },
-    { tag: tags.propertyName, color: "#e36209" },
-    { tag: tags.attributeName, color: "#6f42c1" },
+    { tag: tags.variableName, color: "#e36209" }, // For general variable names
+    { tag: tags.propertyName, color: "#e36209" }, // For object properties
+    { tag: tags.attributeName, color: "#6f42c1" }, // For HTML/XML attributes
     { tag: tags.operator, color: "#d73a49" },
     { tag: tags.string, color: "#032f62" },
-    { tag: tags.meta, color: "#24292e" },
-    { tag: tags.typeName, color: "#22863a", fontWeight: "bold" }, 
-    { tag: tags.tagName, color: "#22863a", fontWeight: "bold" }, 
+    { tag: tags.meta, color: "#24292e" }, // For meta-information like annotations
+    { tag: tags.typeName, color: "#22863a", fontWeight: "bold" }, // For type names (classes, interfaces)
+    { tag: tags.tagName, color: "#22863a", fontWeight: "bold" }, // For HTML/XML tags
     { tag: tags.comment, color: "#6a737d", fontStyle: "italic" },
     { tag: tags.link, color: "#0366d6", textDecoration: "underline" },
-    { tag: tags.invalid, color: "#cb2431" },
-    { tag: tags.className, color: "#6f42c1" },
-    { tag: tags.constant(tags.variableName), color: "#005cc5" },
-    { tag: tags.labelName, color: "#e36209" },
+    { tag: tags.invalid, color: "#cb2431" }, // For invalid characters/syntax
+    { tag: tags.className, color: "#6f42c1" }, // For class names in definitions/selectors
+    { tag: tags.constant(tags.variableName), color: "#005cc5" }, // For constants
+    { tag: tags.labelName, color: "#e36209" }, // For labels (e.g., in switch, goto)
 ]);
 
+// Configuration for the light theme
 const editorLightTheme = [
     EditorView.theme({
-        "&": { color: "#212529", backgroundColor: "#f8f9fa" },
-        ".cm-content": { caretColor: "#000" },
-        "&.cm-focused .cm-cursor": { borderLeftColor: "#000" },
-        "&.cm-focused .cm-selectionBackground, ::selection": { backgroundColor: "#cfe2ff", color: "#000" },
-        ".cm-gutters": { backgroundColor: "#e9ecef", color: "#495057", borderRight: "1px solid #dee2e6" },
-        ".cm-activeLineGutter": { backgroundColor: "#dbe4ff" },
-        ".cm-lineNumbers .cm-gutterElement": { color: "#6c757d" },
-        ".cm-activeLine": { backgroundColor: "#e7f5ff" },
+        "&": { color: "#212529", backgroundColor: "#f8f9fa" }, // Editor background and default text
+        ".cm-content": { caretColor: "#000" }, // Caret color
+        "&.cm-focused .cm-cursor": { borderLeftColor: "#000" }, // Cursor color when focused
+        "&.cm-focused .cm-selectionBackground, ::selection": { backgroundColor: "#cfe2ff", color: "#000" }, // Selection background
+        ".cm-gutters": { backgroundColor: "#e9ecef", color: "#495057", borderRight: "1px solid #dee2e6" }, // Gutters background and text
+        ".cm-activeLineGutter": { backgroundColor: "#dbe4ff" }, // Active line gutter background
+        ".cm-lineNumbers .cm-gutterElement": { color: "#6c757d" }, // Line numbers color
+        ".cm-activeLine": { backgroundColor: "#e7f5ff" }, // Active line background
     }, { dark: false }),
-    syntaxHighlighting(customLightThemeHighlighter)
+    syntaxHighlighting(customLightThemeHighlighter) // Apply custom syntax highlighting for light theme
 ];
 
 
-function detectLang(filename = "") {
-  if (/\.js$/i.test(filename)) return javascript();
-  if (/\.html?$/i.test(filename)) return html({ matchClosingTags: true, autoCloseTags: true });
-  if (/\.css$/i.test(filename)) return css();
-  if (/\.json$/i.test(filename)) return json();
-  if (/\.xml$/i.test(filename)) return xml();
-  if (/\.md$/i.test(filename)) return markdown({ base: javascript, codeLanguages: languages });
-  if (/\.py$/i.test(filename)) return python();
-  return [];
+/**
+ * Detects the CodeMirror language extension based on the filename or language name.
+ * @param {string} [identifier=""] - The filename or language name.
+ * @returns {Language.LanguageSupport | Array} The CodeMirror language extension or an empty array.
+ */
+function detectLang(identifier = "") {
+    // Try matching by language name first (for language changer)
+    const langByName = availableLanguages.find(l => l.name.toLowerCase() === identifier.toLowerCase());
+    if (langByName) return langByName.langFunc();
+
+    // Fallback to extension-based detection
+    const ext = identifier.split('.').pop().toLowerCase();
+    const langByExt = availableLanguages.find(l => l.extension === `.${ext}`);
+    if (langByExt) return langByExt.langFunc();
+    
+    // More specific fallbacks if needed, or default
+    if (/\.js$/i.test(identifier)) return javascript();
+    if (/\.html?$/i.test(identifier)) return html({ matchClosingTags: true, autoCloseTags: true });
+    if (/\.css$/i.test(identifier)) return css();
+    if (/\.json$/i.test(identifier)) return json();
+    if (/\.xml$/i.test(identifier)) return xml();
+    if (/\.md$/i.test(identifier)) return markdown({ base: javascript, codeLanguages: cmLanguages });
+    if (/\.py$/i.test(identifier)) return python();
+    return []; // Default to no specific language support (plain text)
 }
 
+
+/**
+ * Gets the Material Design Icon class for a given filename.
+ * @param {string} [filename=""] - The name of the file.
+ * @returns {string} The MDI icon class.
+ */
 function getFileIcon(filename = "") {
   const ext = filename.split('.').pop().toLowerCase();
   switch (ext) {
@@ -141,20 +153,31 @@ function getFileIcon(filename = "") {
   }
 }
 
+// --- Global State Variables ---
 let openTabs = [];
 let activeTabName = null;
-let editors = {};
-let currentEditorView = null;
+let editors = {}; // Stores CodeMirror EditorView instances, keyed by tab name
+let currentEditorView = null; // The currently focused EditorView
 let untitledCount = 1;
-let currentFolderFiles = [];
+let currentFolderFiles = []; // Files in the currently open folder
 
+// --- DOM Element References ---
 let fileListElement, tabsContainerElement, editorPaneElement, fileExplorerPanelElement,
     sidebarExplorerToggleElement, sidebarSearchToggleElement, sidebarSaveFileElement,
-    appContainerElement, menuToggleThemeElement;
+    appContainerElement, menuToggleThemeElement, menuSaveAsElement,
+    statusLanguageElement, statusEncodingElement, statusCursorElement, statusAutosaveElement,
+    languageModalBackdrop, languageListContainer,
+    menuToggleAutosaveElement, autosaveStatusMenuElement;
 
+
+// --- UI Rendering Functions ---
+
+/**
+ * Renders the list of files in the file explorer panel.
+ */
 function renderFileList() {
   if (!fileListElement) return;
-  fileListElement.innerHTML = "";
+  fileListElement.innerHTML = ""; // Clear existing file list
   if (currentFolderFiles.length > 0) {
     currentFolderFiles.forEach(file => {
       const div = document.createElement("div");
@@ -169,15 +192,19 @@ function renderFileList() {
   }
 }
 
+/**
+ * Renders the open tabs in the tab bar.
+ */
 function renderTabs() {
   if (!tabsContainerElement) return;
-  tabsContainerElement.innerHTML = "";
+  tabsContainerElement.innerHTML = ""; // Clear existing tabs
   openTabs.forEach(tab => {
     const iconClass = getFileIcon(tab.name);
     const div = document.createElement("div");
     div.className = "tab" + (activeTabName === tab.name ? " active" : "");
-    div.dataset.fileName = tab.name;
+    div.dataset.fileName = tab.name; // Used for identifying the tab
     div.title = tab.name + (tab.dirty ? " (modified)" : "");
+    // Structure for tab display: icon, name (renameable), dirty indicator, close button
     div.innerHTML = `
       <span class="tab-name-display" data-tab-name="${tab.name}">
         <i class="mdi ${iconClass}"></i>
@@ -188,11 +215,15 @@ function renderTabs() {
   });
 }
 
-let isRenaming = false; 
+let isRenaming = false; // Flag to prevent multiple rename operations simultaneously
 
+/**
+ * Handles the renaming of a tab.
+ * @param {string} oldName - The current name of the tab to rename.
+ */
 function handleRenameTab(oldName) {
     console.log(`handleRenameTab called for: ${oldName}`);
-    if (isRenaming) { 
+    if (isRenaming) {
         console.log("handleRenameTab: Another rename is already in progress.");
         return;
     }
@@ -214,7 +245,7 @@ function handleRenameTab(oldName) {
         console.warn("handleRenameTab: tabNameDisplay not found for", oldName);
         return;
     }
-    
+
     const tabTextSpan = tabNameDisplay.querySelector('.tab-text');
     if (!tabTextSpan) {
         if (tabNameDisplay.querySelector('.tab-name-input')) {
@@ -225,8 +256,7 @@ function handleRenameTab(oldName) {
         return;
     }
 
-    isRenaming = true; 
-    console.log("handleRenameTab: Found tabTextSpan, creating input. isRenaming set to true.");
+    isRenaming = true;
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'tab-name-input';
@@ -237,21 +267,15 @@ function handleRenameTab(oldName) {
     input.select();
 
     const finishRename = () => {
-        console.log("finishRename called. Input value:", input.value, "isRenaming was:", isRenaming);
-        isRenaming = false; 
-        console.log("isRenaming set to false.");
-
+        isRenaming = false;
         const newName = input.value.trim();
         const newTabText = document.createElement('span');
         newTabText.className = 'tab-text';
-        newTabText.textContent = newName || oldName;
+        newTabText.textContent = newName || oldName; 
 
         if (input.parentNode) {
-            input.replaceWith(newTabText);
-        } else {
-            console.warn("Input field for rename was not in DOM during finishRename cleanup.");
+            input.replaceWith(newTabText); 
         }
-
         input.removeEventListener('blur', finishRename);
         input.removeEventListener('keydown', handleInputKeydown);
 
@@ -265,10 +289,9 @@ function handleRenameTab(oldName) {
                 }
                 return;
             }
-            console.log(`Renaming "${oldName}" to "${newName}"`);
-            tabData.name = newName;
+            tabData.name = newName; 
             const newLang = detectLang(newName) || [];
-            tabData.lang = newLang;
+            tabData.lang = newLang; 
 
             const folderFileIndex = currentFolderFiles.findIndex(f => f.name === oldName && tabData.handle && f.handle === tabData.handle);
             if (folderFileIndex !== -1) {
@@ -282,14 +305,14 @@ function handleRenameTab(oldName) {
                     effects: languageCompartment.reconfigure(newLang)
                 });
             }
-            if (activeTabName === oldName) activeTabName = newName;
+            if (activeTabName === oldName) activeTabName = newName; 
             renderTabs();
             renderFileList();
+            updateStatusBar(tabData); 
             if (activeTabName === newName && currentEditorView) {
-                setTimeout(() => currentEditorView.focus(), 0);
+                setTimeout(() => currentEditorView.focus(), 0); 
             }
-        } else { 
-            console.log("Rename cancelled or name unchanged for:", oldName);
+        } else {
             if (!newTabText.parentNode && tabsContainerElement.querySelector(`.tab[data-file-name="${CSS.escape(oldName)}"]`)) {
                 renderTabs();
             }
@@ -299,18 +322,23 @@ function handleRenameTab(oldName) {
     const handleInputKeydown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            input.blur();
+            input.blur(); 
         } else if (e.key === 'Escape') {
             input.value = oldName; 
-            input.blur();
+            input.blur(); 
         }
     };
-    input.addEventListener('blur', finishRename, { once: true });
+    input.addEventListener('blur', finishRename, { once: true }); 
     input.addEventListener('keydown', handleInputKeydown);
 }
 
-
+/**
+ * Renders the CodeMirror editor for the active tab.
+ */
 function renderEditor() {
+  const tabDataForStatus = openTabs.find(t => t.name === activeTabName);
+  updateStatusBar(tabDataForStatus); 
+
   if (!editorPaneElement) return;
   editorPaneElement.innerHTML = "";
   if (!activeTabName) { currentEditorView = null; return; }
@@ -322,14 +350,11 @@ function renderEditor() {
     return;
   }
   
-  let activeThemeExtensions = currentThemeIsDark ? oneDark : editorLightTheme; 
+  let activeThemeExtensions = userSettings.theme === 'dark' ? oneDark : editorLightTheme; 
   let baseHighlighting = [];
-  if (!currentThemeIsDark) {
-      // For light theme, explicitly add defaultHighlightStyle to ensure classes are applied,
-      // which customLightThemeHighlighter can then style.
+  if (userSettings.theme !== 'dark') {
       baseHighlighting.push(syntaxHighlighting(defaultHighlightStyle, {fallback: true}));
   }
-
 
   if (editors[tabData.name]) {
     editorPaneElement.appendChild(editors[tabData.name].dom);
@@ -360,7 +385,7 @@ function renderEditor() {
 
     const extensions = [
       themeCompartment.of(activeThemeExtensions), 
-      ...baseHighlighting, // Add defaultHighlightStyle for light theme here for NEW editors
+      ...baseHighlighting,
       languageCompartment.of(initialLangExtension),
       lineNumbers(),
       highlightActiveLineGutter(),
@@ -380,14 +405,9 @@ function renderEditor() {
       lintGutter(),
       autocompletion(),
       keymap.of([
-        ...defaultKeymap,
-        ...historyKeymap,
-        ...closeBracketsKeymap,
-        ...searchKeymap,
-        ...completionKeymap,
-        ...lintKeymap,
-        ...foldKeymapExtensions,
-        indentWithTab,
+        ...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap,
+        ...searchKeymap, ...completionKeymap, ...lintKeymap,
+        ...foldKeymapExtensions, indentWithTab,
       ]),
       EditorState.allowMultipleSelections.of(true),
       ...specificFileExtensions,
@@ -402,10 +422,13 @@ function renderEditor() {
             }
           }
         }
+        if (update.selectionSet || update.docChanged) { 
+            updateCursorPositionStatus(update.state);
+        }
       }),
       EditorView.theme({
         '&': { height: "100%" },
-        '.cm-scroller': { fontFamily: "var(--font-family-editor)", fontSize: '15px' },
+        '.cm-scroller': { fontFamily: "var(--font-family-editor)", fontSize: '15px' }, 
         '.cm-gutters': { userSelect: 'none' }
       }),
     ].flat().filter(Boolean);
@@ -423,92 +446,165 @@ function renderEditor() {
   }
 
   currentEditorView = editors[tabData.name];
+  updateCursorPositionStatus(currentEditorView.state); 
   setTimeout(() => currentEditorView?.focus(), 10);
 }
 
-// --- Core Application Logic ---
 
-function createNewTab({ name, content = "", handle = null, lang = null, dirty = false }) {
-  console.log("createNewTab called for:", name);
-  if (openTabs.find(t => t.name === name)) {
-    console.log("Tab already exists, switching to:", name);
-    switchTab(name);
+// --- Status Bar Update Functions ---
+function getLanguageName(langInstance, fileName) {
+  if (langInstance && langInstance.language && langInstance.language.name) {
+    const name = langInstance.language.name;
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+  const langByExt = availableLanguages.find(l => fileName && l.extension === `.${fileName.split('.').pop().toLowerCase()}`);
+  if (langByExt) return langByExt.name;
+  
+  return "Plain Text";
+}
+
+function updateStatusBar(tabData) {
+  if (!statusLanguageElement || !statusEncodingElement || !statusCursorElement) {
     return;
   }
-  const newTab = { name, content, handle, lang: lang || detectLang(name) || [], dirty };
-  openTabs.push(newTab);
+  if (tabData) {
+    const langName = getLanguageName(tabData.lang, tabData.name);
+    statusLanguageElement.textContent = langName;
+    statusEncodingElement.textContent = "UTF-8";
+  } else {
+    statusLanguageElement.textContent = " "; 
+    statusEncodingElement.textContent = " ";
+    statusCursorElement.textContent = " ";
+  }
+}
+
+function updateCursorPositionStatus(state) {
+    if (!statusCursorElement || !state) return;
+    const head = state.selection.main.head;
+    const line = state.doc.lineAt(head);
+    statusCursorElement.textContent = `Ln ${line.number}, Col ${head - line.from + 1}`;
+}
+
+function updateAutosaveStatusDisplay(message = "", isError = false) {
+    if (!statusAutosaveElement) return;
+    statusAutosaveElement.textContent = message;
+    statusAutosaveElement.style.color = isError ? 'var(--theme-error-color, #f44336)' : 'var(--theme-text-secondary)'; 
+    if (message) {
+        setTimeout(() => {
+            if (statusAutosaveElement.textContent === message) { 
+                statusAutosaveElement.textContent = "";
+            }
+        }, 3000); 
+    }
+}
+
+
+// --- Core Application Logic ---
+async function createNewTab({ name, content = "", handle = null, lang = null, dirty = false, fromAutosave = false }) {
+  console.log("createNewTab called for:", name, "fromAutosave:", fromAutosave);
+
+  const existingTabIndex = openTabs.findIndex(t => t.name === name);
+  if (existingTabIndex !== -1) {
+    if (!fromAutosave || openTabs[existingTabIndex].handle === handle) { 
+        console.log("Tab already exists, switching to:", name);
+        switchTab(name);
+        return;
+    }
+  }
+
+  let finalContent = content;
+  if (!fromAutosave && userSettings.autosaveEnabled) {
+      const autosavedContent = localStorage.getItem('autosave_' + name);
+      if (autosavedContent !== null) {
+          if (content !== autosavedContent) { 
+              if (confirm(`An autosaved version of "${name}" was found. Do you want to restore it?`)) {
+                  finalContent = autosavedContent;
+                  dirty = true; 
+                  console.log(`Restored autosaved content for "${name}"`);
+              }
+          }
+      }
+  }
+
+  const newTab = { name, content: finalContent, handle, lang: lang || detectLang(name) || [], dirty };
+  if (existingTabIndex !== -1 && fromAutosave) { 
+      openTabs[existingTabIndex] = newTab;
+  } else {
+      openTabs.push(newTab);
+  }
   activeTabName = name;
   renderTabs();
   renderFileList();
-  renderEditor();
+  renderEditor(); 
 }
 
+/**
+ * Switches to the specified tab.
+ * @param {string} tabName - The name of the tab to switch to.
+ */
 function switchTab(tabName) {
-  console.log(`switchTab: Called for "${tabName}". Current active: "${activeTabName}"`);
-  if (isRenaming) { 
-      console.log("switchTab: Rename in progress, switch aborted.");
-      return;
+  if (isRenaming) {
+      return; 
   }
   if (!openTabs.find(t => t.name === tabName)) {
-    console.warn(`switchTab: Attempted to switch to non-existent tab: "${tabName}"`);
     return;
   }
-
-  const needsTabListUpdate = activeTabName !== tabName;
   activeTabName = tabName;
-
-  if (needsTabListUpdate) {
-    console.log(`switchTab: Active tab changed to "${tabName}". Calling renderTabs().`);
-    renderTabs();
-  } else {
-    console.log(`switchTab: Tab "${tabName}" is already active. Not calling renderTabs().`);
-  }
-  console.log(`switchTab: Calling renderEditor() for "${tabName}".`);
-  renderEditor();
+  renderTabs(); 
+  renderEditor(); 
 }
+
 
 async function closeTab(tabName) {
   console.log(`closeTab: Called for "${tabName}"`);
-   if (isRenaming) { 
-      console.log("closeTab: Rename in progress, close aborted.");
-      return;
-  }
-  const tabToClose = openTabs.find(t => t.name === tabName);
-  if (tabToClose && tabToClose.dirty) {
+  if (isRenaming) { return; }
+  const tabToCloseIndex = openTabs.findIndex(t => t.name === tabName);
+  if (tabToCloseIndex === -1) return;
+
+  const tabToClose = openTabs[tabToCloseIndex];
+  if (tabToClose.dirty) {
     if (!confirm(`File "${tabName}" has unsaved changes. Close anyway?`)) {
-      console.log(`closeTab: Close cancelled by user for "${tabName}"`);
       return;
     }
   }
 
-  openTabs = openTabs.filter(t => t.name !== tabName);
+  openTabs.splice(tabToCloseIndex, 1); 
   if (editors[tabName]) {
     editors[tabName].destroy();
     delete editors[tabName];
-    console.log(`closeTab: Editor for "${tabName}" destroyed.`);
   }
+  localStorage.removeItem('autosave_' + tabName);
+  console.log(`Cleared autosave for ${tabName}`);
+
 
   if (activeTabName === tabName) {
-    activeTabName = openTabs.length ? openTabs[openTabs.length - 1].name : null;
-    console.log(`closeTab: Active tab was "${tabName}", new active tab: "${activeTabName}"`);
+    activeTabName = openTabs.length ? openTabs[Math.max(0, tabToCloseIndex -1)].name : null; 
+    if (!activeTabName && openTabs.length > 0) activeTabName = openTabs[0].name;
   }
   renderTabs();
-  renderEditor();
-  console.log(`closeTab: Finished for "${tabName}". Tabs and editor re-rendered.`);
+  renderEditor(); 
 }
 
+// --- File System Operations ---
+/**
+ * Opens a file from the folder explorer.
+ * @param {FileSystemFileHandle} fileHandle - The file handle.
+ * @param {string} fileName - The name of the file.
+ */
 async function openFileFromFolder(fileHandle, fileName) {
-  console.log(`openFileFromFolder: Called for "${fileName}"`);
   try {
-    const existingTab = openTabs.find(tab => tab.name === fileName && tab.handle && typeof tab.handle.isSameEntry === 'function' && typeof fileHandle.isSameEntry === 'function' && tab.handle.isSameEntry(fileHandle));
+    const existingTab = openTabs.find(tab =>
+        tab.name === fileName &&
+        tab.handle && typeof tab.handle.isSameEntry === 'function' &&
+        typeof fileHandle.isSameEntry === 'function' &&
+        tab.handle.isSameEntry(fileHandle)
+    );
     if (existingTab) {
-        console.log(`openFileFromFolder: Tab for "${fileName}" already exists with same handle. Switching.`);
         switchTab(fileName);
         return;
     }
     const file = await fileHandle.getFile();
     const content = await file.text();
-    console.log(`openFileFromFolder: Content read for "${fileName}". Creating new tab.`);
     createNewTab({ name: fileName, content, handle: fileHandle, lang: detectLang(fileName) });
   } catch (error) {
     console.error(`Error opening file "${fileName}" from folder:`, error);
@@ -516,33 +612,104 @@ async function openFileFromFolder(fileHandle, fileName) {
   }
 }
 
-async function saveActiveFile() {
-  if (!activeTabName) { alert("No active file to save."); return; }
-  const tab = openTabs.find(t => t.name === activeTabName);
-  if (!tab) { alert("Active tab data not found."); return; }
 
-  console.log(`saveActiveFile: Saving "${tab.name}"`);
-  if (tab.handle && typeof tab.handle.createWritable === 'function') {
+async function saveActiveFile(isSaveAs = false) {
+  if (!activeTabName) { alert("No active file to save."); return false; }
+  const tab = openTabs.find(t => t.name === activeTabName);
+  if (!tab) { alert("Active tab data not found."); return false; }
+  
+  let targetHandle = tab.handle;
+  let targetName = tab.name;
+
+  if (isSaveAs || !targetHandle) { 
+    if (window.showSaveFilePicker) {
+      try {
+        const newHandle = await window.showSaveFilePicker({
+          suggestedName: targetName,
+          types: [{ description: 'Text Files', accept: {'text/plain': ['.txt', '.js', '.html', '.css', '.md', '.json', '.py', '.xml']} }],
+        });
+        targetHandle = newHandle;
+        targetName = newHandle.name; 
+      } catch (err) {
+        if (err.name === 'AbortError') return false;
+        console.error("Error with showSaveFilePicker:", err);
+        alert("Could not get file location to save.");
+        return false;
+      }
+    } else { 
+      const newNameInput = prompt("Enter new filename:", targetName);
+      if (!newNameInput) return false;
+      targetName = newNameInput;
+      downloadFile(targetName, tab.content);
+      if (tab.name !== targetName) { 
+          const oldName = tab.name;
+          tab.name = targetName;
+          tab.handle = null; 
+          tab.lang = detectLang(targetName) || [];
+          if (editors[oldName]) {
+              editors[targetName] = editors[oldName];
+              delete editors[oldName];
+              editors[targetName].dispatch({ effects: languageCompartment.reconfigure(tab.lang) });
+          }
+          if (activeTabName === oldName) activeTabName = targetName;
+      }
+      tab.dirty = false;
+      localStorage.removeItem('autosave_' + oldName); 
+      localStorage.removeItem('autosave_' + targetName); 
+      renderTabs();
+      updateStatusBar(tab);
+      return true;
+    }
+  }
+
+  if (targetHandle && typeof targetHandle.createWritable === 'function') {
     try {
-      const writable = await tab.handle.createWritable();
+      const writable = await targetHandle.createWritable();
       await writable.write(tab.content);
       await writable.close();
+      
+      const oldName = tab.name;
+      if (oldName !== targetName || tab.handle !== targetHandle) { 
+          tab.name = targetName;
+          tab.handle = targetHandle;
+          tab.lang = detectLang(targetName) || [];
+
+          if (editors[oldName]) {
+              editors[targetName] = editors[oldName]; 
+              delete editors[oldName];
+              editors[targetName].dispatch({ effects: languageCompartment.reconfigure(tab.lang) });
+          }
+          if (activeTabName === oldName) activeTabName = targetName;
+          localStorage.removeItem('autosave_' + oldName); 
+      }
+      
       tab.dirty = false;
+      localStorage.removeItem('autosave_' + targetName); 
       renderTabs();
-      console.log(`File "${tab.name}" saved successfully via File System Access API.`);
+      renderFileList(); 
+      updateStatusBar(tab);
+      return true;
     } catch (error) {
-      console.error(`Error saving file "${tab.name}" via File System Access API:`, error);
-      alert(`Could not save file: ${error.message}. Try downloading instead.`);
-      downloadFile(tab.name, tab.content);
+      console.error(`Error saving file "${targetName}":`, error);
+      alert(`Could not save file: ${error.message}.`);
+      return false;
     }
-  } else {
-    console.log(`saveActiveFile: No file handle for "${tab.name}", using download fallback.`);
-    downloadFile(tab.name, tab.content);
-    tab.dirty = false;
-    renderTabs();
+  } else { 
+      downloadFile(targetName, tab.content); 
+      tab.dirty = false;
+      localStorage.removeItem('autosave_' + targetName);
+      renderTabs();
+      updateStatusBar(tab);
+      return true;
   }
 }
 
+
+/**
+ * Downloads a file with the given name and content.
+ * @param {string} filename - The name of the file.
+ * @param {string} content - The content of the file.
+ */
 function downloadFile(filename, content) {
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -550,12 +717,14 @@ function downloadFile(filename, content) {
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
-  a.click();
+  a.click(); 
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  console.log(`File "${filename}" downloaded.`);
 }
 
+/**
+ * Handles the "Open File" dialog.
+ */
 async function handleOpenFileDialog() {
   if (!window.showOpenFilePicker) {
     alert("Your browser does not support the File System Access API for opening files. Please use a modern browser like Chrome or Edge.");
@@ -567,25 +736,31 @@ async function handleOpenFileDialog() {
     const [fileHandle] = await window.showOpenFilePicker({ types: [{ description: 'Text Files', accept: {'text/plain': ['.txt', '.js', '.html', '.css', '.md', '.json', '.py', '.xml', '.log', '.ini', '.cfg', '.ts', '.jsx', '.tsx', '.yaml', '.yml', '.sh', '.c', '.cpp', '.java', '.php', '.rb', '.go' ]} }]});
     const file = await fileHandle.getFile();
     createNewTab({ name: file.name, content: await file.text(), handle: fileHandle, lang: detectLang(file.name) });
-  } catch (e) { if (e.name !== 'AbortError') console.error("Error opening file with dialog:", e); }
+  } catch (e) { if (e.name !== 'AbortError') console.error("Error opening file with dialog:", e); } 
 }
 
+/**
+ * Handles the "Open Folder" dialog.
+ */
 async function handleOpenFolderDialog() {
   if (!window.showDirectoryPicker) { alert("Folder API not supported."); return; }
   try {
     const dirHandle = await window.showDirectoryPicker();
-    currentFolderFiles = [];
+    currentFolderFiles = []; 
     for await (const entry of dirHandle.values()) {
       if (entry.kind === "file") currentFolderFiles.push({ name: entry.name, handle: entry });
     }
-    currentFolderFiles.sort((a, b) => a.name.localeCompare(b.name));
+    currentFolderFiles.sort((a, b) => a.name.localeCompare(b.name)); 
     renderFileList();
-  } catch (e) { if (e.name !== 'AbortError') console.error("Error opening folder:", e); }
+  } catch (e) { if (e.name !== 'AbortError') console.error("Error opening folder:", e); } 
 }
 
+/**
+ * Sets up drag and drop functionality for opening files.
+ */
 function setupDragAndDrop() {
     if (!editorPaneElement && !document.body) return;
-    const dropZone = document.body;
+    const dropZone = document.body; 
     dropZone.ondragover = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; dropZone.classList.add('dragover-active'); };
     dropZone.ondragleave = () => dropZone.classList.remove('dragover-active');
     dropZone.ondragend = () => dropZone.classList.remove('dragover-active');
@@ -599,43 +774,58 @@ function setupDragAndDrop() {
     };
 }
 
+// --- UI Interaction Handlers ---
+/**
+ * Opens the search panel in the current editor.
+ */
 function handleOpenSearch() {
   if (currentEditorView) openSearchPanel(currentEditorView);
   else alert("Open a file to use search.");
 }
 
+
 function handleNewFile() {
   let newFileName; let count = untitledCount;
-  do { newFileName = `untitled${count > 1 ? "-" + count : ""}.txt`; count++; }
+  do { newFileName = `untitled-${count}.txt`; count++; } 
   while (openTabs.some(t => t.name === newFileName));
   untitledCount = count;
-  console.log("handleNewFile: Creating new tab:", newFileName);
   createNewTab({ name: newFileName, content: "", lang: detectLang(newFileName) });
 }
 
+function handleSaveAs() { 
+    saveActiveFile(true);
+}
+
 function toggleTheme() {
-    currentThemeIsDark = !currentThemeIsDark;
+    userSettings.theme = userSettings.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+    saveUserSettings(); 
+    console.log(`Theme toggled. Current theme: ${userSettings.theme}`);
+}
+
+function applyTheme() { 
+    currentThemeIsDark = userSettings.theme === 'dark'; 
     appContainerElement?.classList.toggle('light-theme', !currentThemeIsDark);
     appContainerElement?.classList.toggle('dark-theme', currentThemeIsDark);
     
-    const newThemeExtensions = currentThemeIsDark ? [oneDark] : editorLightTheme; 
+    const newThemeExtensions = currentThemeIsDark ? oneDark : editorLightTheme; 
 
     Object.values(editors).forEach(editor => {
         if (editor) { 
             editor.dispatch({ effects: themeCompartment.reconfigure(newThemeExtensions) });
         }
     });
-    if (currentEditorView && !Object.values(editors).includes(currentEditorView)) {
-         currentEditorView.dispatch({ effects: themeCompartment.reconfigure(newThemeExtensions) });
-    }
-    console.log(`Theme toggled. Light theme active: ${!currentThemeIsDark}`);
 }
 
+/**
+ * Binds menu actions and keyboard shortcuts.
+ */
 function bindMenuAndShortcuts() {
   document.getElementById('menu-new-file')?.addEventListener('click', handleNewFile);
   document.getElementById('menu-open-file')?.addEventListener('click', handleOpenFileDialog);
   document.getElementById('menu-open-folder')?.addEventListener('click', handleOpenFolderDialog);
-  document.getElementById('menu-save-file')?.addEventListener('click', saveActiveFile);
+  document.getElementById('menu-save-file')?.addEventListener('click', () => saveActiveFile(false)); 
+  menuSaveAsElement?.addEventListener('click', handleSaveAs); 
   document.getElementById('menu-close-file')?.addEventListener('click', () => { if (activeTabName) closeTab(activeTabName); });
   document.getElementById('menu-undo')?.addEventListener('click', () => currentEditorView && undo({ state: currentEditorView.state, dispatch: currentEditorView.dispatch }));
   document.getElementById('menu-redo')?.addEventListener('click', () => currentEditorView && redo({ state: currentEditorView.state, dispatch: currentEditorView.dispatch }));
@@ -645,82 +835,230 @@ function bindMenuAndShortcuts() {
   document.getElementById('menu-select-all')?.addEventListener('click', () => { if (currentEditorView) currentEditorView.dispatch({ selection: { anchor: 0, head: currentEditorView.state.doc.length } }); });
   document.getElementById('menu-find')?.addEventListener('click', handleOpenSearch);
   menuToggleThemeElement?.addEventListener('click', toggleTheme);
+  menuToggleAutosaveElement?.addEventListener('click', toggleAutosave);
+
+
   window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        if (e.shiftKey) { 
+            handleSaveAs();
+        } else { 
+            saveActiveFile(false);
+        }
+    }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') { e.preventDefault(); handleNewFile(); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o' && !e.shiftKey) { e.preventDefault(); handleOpenFileDialog(); }
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'o') { e.preventDefault(); handleOpenFolderDialog(); }
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveActiveFile(); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'w') { e.preventDefault(); if (activeTabName) closeTab(activeTabName); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') { e.preventDefault(); handleOpenSearch(); }
   });
 }
 
+/**
+ * Sets up event listeners for sidebar toggles.
+ */
 function setupSidebarToggles() {
-    sidebarExplorerToggleElement?.addEventListener('click', () => { if (fileExplorerPanelElement) { const isHidden = fileExplorerPanelElement.style.display === 'none'; fileExplorerPanelElement.style.display = isHidden ? 'flex' : 'none'; sidebarExplorerToggleElement.classList.toggle('active', !isHidden); } });
+    sidebarExplorerToggleElement?.addEventListener('click', () => {
+        if (fileExplorerPanelElement) {
+            const isHidden = fileExplorerPanelElement.style.display === 'none';
+            fileExplorerPanelElement.style.display = isHidden ? 'flex' : 'none'; 
+            sidebarExplorerToggleElement.classList.toggle('active', !isHidden);
+        }
+    });
     sidebarSearchToggleElement?.addEventListener('click', handleOpenSearch);
-    sidebarSaveFileElement?.addEventListener('click', saveActiveFile);
+    sidebarSaveFileElement?.addEventListener('click', () => saveActiveFile(false));
 }
 
-// Variables for manual double-click detection
+
+// --- Language Changer Modal Logic ---
+function populateLanguageModal() {
+    if (!languageListContainer) return;
+    languageListContainer.innerHTML = ""; 
+    availableLanguages.forEach(lang => {
+        const item = document.createElement('button');
+        item.className = 'language-item';
+        item.textContent = lang.name;
+        item.dataset.langName = lang.name;
+        item.onclick = () => selectLanguage(lang.name);
+        languageListContainer.appendChild(item);
+    });
+}
+
+function openLanguageChanger() {
+    if (!activeTabName) {
+        alert("Please open a file to change its language.");
+        return;
+    }
+    populateLanguageModal();
+    const modal = document.getElementById('language-modal-backdrop');
+    if (modal) modal.classList.add('active');
+}
+
+function selectLanguage(languageName) {
+    if (!activeTabName || !currentEditorView) return;
+    const tab = openTabs.find(t => t.name === activeTabName);
+    if (!tab) return;
+
+    const selectedLang = availableLanguages.find(l => l.name === languageName);
+    if (!selectedLang) return;
+
+    const newLangExtension = selectedLang.langFunc();
+    tab.lang = newLangExtension; 
+
+    currentEditorView.dispatch({
+        effects: languageCompartment.reconfigure(newLangExtension)
+    });
+    updateStatusBar(tab); 
+    const modal = document.getElementById('language-modal-backdrop');
+    if (modal) modal.classList.remove('active'); 
+}
+
+
+// --- Autosave and Settings Persistence ---
+function loadUserSettings() {
+    try {
+        const storedSettings = localStorage.getItem('editorSettings');
+        if (storedSettings) {
+            const parsed = JSON.parse(storedSettings);
+            userSettings = { ...DEFAULT_SETTINGS, ...parsed }; 
+        } else {
+            userSettings = { ...DEFAULT_SETTINGS }; 
+        }
+    } catch (e) {
+        console.error("Error loading user settings:", e);
+        userSettings = { ...DEFAULT_SETTINGS }; 
+    }
+    console.log("Loaded settings:", userSettings);
+    applyTheme(); 
+    updateAutosaveMenuText();
+    if (userSettings.autosaveEnabled) {
+        startAutosave();
+    }
+}
+
+function saveUserSettings() {
+    try {
+        localStorage.setItem('editorSettings', JSON.stringify(userSettings));
+        console.log("Saved settings:", userSettings);
+    } catch (e) {
+        console.error("Error saving user settings:", e);
+    }
+}
+
+function toggleAutosave() {
+    userSettings.autosaveEnabled = !userSettings.autosaveEnabled;
+    saveUserSettings();
+    updateAutosaveMenuText();
+    if (userSettings.autosaveEnabled) {
+        startAutosave();
+        updateAutosaveStatusDisplay("Autosave ON");
+    } else {
+        stopAutosave();
+        updateAutosaveStatusDisplay("Autosave OFF");
+    }
+}
+
+function updateAutosaveMenuText() {
+    if (autosaveStatusMenuElement) {
+        autosaveStatusMenuElement.textContent = userSettings.autosaveEnabled ? "(On)" : "(Off)";
+    }
+}
+
+function startAutosave() {
+    if (autosaveIntervalId) clearInterval(autosaveIntervalId); 
+    if (!userSettings.autosaveEnabled || userSettings.autosaveInterval <= 0) return;
+
+    autosaveIntervalId = setInterval(performAutosave, userSettings.autosaveInterval);
+    console.log(`Autosave started. Interval: ${userSettings.autosaveInterval / 1000}s`);
+}
+
+function stopAutosave() {
+    if (autosaveIntervalId) {
+        clearInterval(autosaveIntervalId);
+        autosaveIntervalId = null;
+        console.log("Autosave stopped.");
+    }
+}
+
+function performAutosave() {
+    if (!userSettings.autosaveEnabled) return;
+    console.log("Performing autosave check...");
+    let savedCount = 0;
+    openTabs.forEach(tab => {
+        if (tab.dirty && tab.content) { 
+            try {
+                localStorage.setItem('autosave_' + tab.name, tab.content);
+                console.log(`Autosaved: ${tab.name}`);
+                savedCount++;
+            } catch (e) {
+                console.error(`Error autosaving ${tab.name}:`, e);
+                if (e.name === 'QuotaExceededError') {
+                    updateAutosaveStatusDisplay("Autosave failed: Storage full!", true);
+                    stopAutosave(); 
+                    userSettings.autosaveEnabled = false; 
+                    saveUserSettings();
+                    updateAutosaveMenuText();
+                }
+                return; 
+            }
+        }
+    });
+    if (savedCount > 0) {
+        updateAutosaveStatusDisplay(`${savedCount} file(s) autosaved`);
+    }
+}
+
+
 let lastClickTime = 0;
 let lastClickTarget = null;
-const DOUBLE_CLICK_THRESHOLD = 350; // ms
-
+const DOUBLE_CLICK_THRESHOLD = 350;
+/**
+ * Sets up event listeners for tab interactions (click, double-click for rename, close).
+ */
 function setupTabEventListeners() {
   if (!tabsContainerElement) {
     console.error("CRITICAL: tabsContainerElement not found for setting up tab event listeners.");
     return;
   }
-  console.log("Setting up tab event listeners on:", tabsContainerElement);
 
   tabsContainerElement.addEventListener('click', function(event) {
     if (isRenaming && event.target.closest('.tab-name-input') !== event.target) {
-        console.log('[TAB CLICK] Rename input active, click elsewhere ignored or handled by blur.');
         return;
     }
-    
-    const tabDiv = event.target.closest('.tab');
-    if (!tabDiv) {
-      console.log('[TAB CLICK] Click was not inside a .tab element.');
-      return;
-    }
 
+    const tabDiv = event.target.closest('.tab'); 
+    if (!tabDiv) return;
+    
     const fileName = tabDiv.dataset.fileName;
-    if (!fileName) {
-      console.log('[TAB CLICK] Tab has no data-file-name attribute.');
-      return;
-    }
+    if (!fileName) return;
 
     const tabNameDisplay = event.target.closest('.tab-name-display');
     const closeButton = event.target.closest('.close');
 
     if (closeButton && closeButton.dataset.tabName === fileName) {
-      console.log(`[TAB CLICK] Close button for: "${fileName}"`);
       event.stopPropagation(); 
       closeTab(fileName);
-      return; 
+      return;
     }
 
     if (tabNameDisplay && tabNameDisplay.dataset.tabName === fileName) {
       const currentTime = new Date().getTime();
       if (currentTime - lastClickTime < DOUBLE_CLICK_THRESHOLD && lastClickTarget === tabNameDisplay) {
-        console.log(`[TAB DBLCLICK DETECTED] Calling handleRenameTab for: "${fileName}"`);
-        event.stopPropagation(); 
+        event.stopPropagation();
         handleRenameTab(fileName);
         lastClickTime = 0; 
         lastClickTarget = null;
       } else {
-        console.log(`[TAB CLICK] Single click on tab name display for: "${fileName}". Switching tab.`);
         lastClickTime = currentTime;
         lastClickTarget = tabNameDisplay;
-        switchTab(fileName); 
+        switchTab(fileName);
       }
-      return; 
+      return;
     }
-    
+
     if (event.target === tabDiv || tabDiv.contains(event.target)) {
-        console.log(`[TAB CLICK] Click on tab body (not name/close). Switching to: "${fileName}"`);
-        lastClickTime = 0;
+        lastClickTime = 0; 
         lastClickTarget = null;
         switchTab(fileName);
     }
@@ -728,8 +1066,13 @@ function setupTabEventListeners() {
 }
 
 
+// --- Initialization ---
+/**
+ * Initializes the UI elements and event listeners.
+ */
 function initUI() {
   console.log("initUI: Starting UI initialization...");
+  // Get references to all necessary DOM elements
   fileListElement = document.getElementById('file-list');
   tabsContainerElement = document.getElementById('tabs-container');
   editorPaneElement = document.getElementById('editor-pane');
@@ -739,18 +1082,58 @@ function initUI() {
   sidebarSaveFileElement = document.getElementById('sidebar-save-file');
   appContainerElement = document.getElementById('app-container');
   menuToggleThemeElement = document.getElementById('menu-toggle-theme');
+  menuSaveAsElement = document.getElementById('menu-save-as-file'); 
+  
+  statusLanguageElement = document.getElementById('status-language');
+  statusEncodingElement = document.getElementById('status-encoding');
+  statusCursorElement = document.getElementById('status-cursor'); 
+  statusAutosaveElement = document.getElementById('status-autosave'); 
 
-  if (!tabsContainerElement) {
-      console.error("CRITICAL FAILURE: tabsContainerElement is null in initUI. Tab functionality will fail.");
-  }
+  languageModalBackdrop = document.getElementById('language-modal-backdrop');
+  languageListContainer = document.getElementById('language-list-container');
+
+  menuToggleAutosaveElement = document.getElementById('menu-toggle-autosave');
+  autosaveStatusMenuElement = document.getElementById('autosave-status-menu');
+
+  // CORRECTED: Comprehensive critical element check
   if (!fileListElement || !tabsContainerElement || !editorPaneElement || !fileExplorerPanelElement ||
-      !sidebarExplorerToggleElement || !sidebarSearchToggleElement || !appContainerElement || !menuToggleThemeElement ) {
-    console.error("One or more UI elements are missing. Check HTML IDs.");
-    document.body.innerHTML = "<p style='color:red;'>Error: Critical UI elements missing.</p>";
+      !sidebarExplorerToggleElement || !sidebarSearchToggleElement || !sidebarSaveFileElement ||
+      !appContainerElement || !menuToggleThemeElement || !menuSaveAsElement ||
+      !statusLanguageElement || !statusEncodingElement || !statusCursorElement || !statusAutosaveElement ||
+      !languageModalBackdrop || !languageListContainer ||
+      !menuToggleAutosaveElement || !autosaveStatusMenuElement) {
+    
+    const missingElements = [
+        {name: 'fileListElement', el: fileListElement},
+        {name: 'tabsContainerElement', el: tabsContainerElement},
+        {name: 'editorPaneElement', el: editorPaneElement},
+        {name: 'fileExplorerPanelElement', el: fileExplorerPanelElement},
+        {name: 'sidebarExplorerToggleElement', el: sidebarExplorerToggleElement},
+        {name: 'sidebarSearchToggleElement', el: sidebarSearchToggleElement},
+        {name: 'sidebarSaveFileElement', el: sidebarSaveFileElement},
+        {name: 'appContainerElement', el: appContainerElement},
+        {name: 'menuToggleThemeElement', el: menuToggleThemeElement},
+        {name: 'menuSaveAsElement', el: menuSaveAsElement},
+        {name: 'statusLanguageElement', el: statusLanguageElement},
+        {name: 'statusEncodingElement', el: statusEncodingElement},
+        {name: 'statusCursorElement', el: statusCursorElement},
+        {name: 'statusAutosaveElement', el: statusAutosaveElement},
+        {name: 'languageModalBackdrop', el: languageModalBackdrop},
+        {name: 'languageListContainer', el: languageListContainer},
+        {name: 'menuToggleAutosaveElement', el: menuToggleAutosaveElement},
+        {name: 'autosaveStatusMenuElement', el: autosaveStatusMenuElement}
+    ].filter(item => !item.el).map(item => item.name).join(', ');
+
+    console.error(`One or more UI elements are missing. Check HTML IDs. Missing: ${missingElements || 'None identified by current check, but an element is falsy'}`);
+    document.body.innerHTML = "<p style='color:red;'>Error: Critical UI elements missing. Application cannot start. Check console for details.</p>";
     return;
   }
 
-  appContainerElement.classList.add(currentThemeIsDark ? 'dark-theme' : 'light-theme');
+  loadUserSettings(); // Load settings BEFORE initial rendering that might depend on them
+
+  // Event listener for language changer
+  statusLanguageElement.addEventListener('click', openLanguageChanger);
+
   renderTabs();
   renderFileList();
   bindMenuAndShortcuts();
@@ -758,27 +1141,36 @@ function initUI() {
   setupDragAndDrop();
   setupTabEventListeners();
 
+  // Open initial files or a new untitled file
   if (Array.isArray(initialFiles) && initialFiles.length > 0) {
+     // For now, just open a new file to ensure editor and status bar are initialized
+     // In a real app, you might loop through initialFiles or restore session
      handleNewFile();
   } else {
-      handleNewFile();
+      handleNewFile(); // If no initial files, open one untitled tab
   }
   console.log("initUI: Initialization complete.");
 }
 
+/**
+ * Registers the service worker for PWA capabilities.
+ */
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
+      navigator.serviceWorker.register('/service-worker.js') // Ensure this path is correct
         .then(reg => console.log('Service Worker registered:', reg.scope))
         .catch(err => console.error('Service Worker registration failed:', err));
     });
   }
 }
 
+// --- Application Entry Point ---
+// Initialize UI and service worker once the DOM is ready
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => { initUI(); registerServiceWorker(); });
 } else {
+  // DOMContentLoaded has already fired
   initUI();
   registerServiceWorker();
 }
