@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Editor</title>
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="images/favicon.png">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+  .menu-bar {
+    height: 32px;
+    background: #23272e;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    border-bottom: 1px solid #21262b;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    user-select: none;
+    z-index: 20;
+    box-shadow: 0 1.5px 0 0 #23272e;
+  }
+  .menu {
+    position: relative;
+    margin-right: 22px;
+    font-size: 14px;
+  }
+  .menu > button {
+    background: none;
+    border: none;
+    color: #bbc7db;
+    font-size: 14px;
+    font-family: inherit;
+    padding: 7px 12px 6px 12px;
+    cursor: pointer;
+    transition: background .12s, color .12s;
+    border-radius: 3px 3px 0 0;
+    outline: none;
+    letter-spacing: 0.03em;
+  }
+  .menu > button:focus,
+  .menu > button:hover,
+  .menu.open > button {
+    background: #283345;
+    color: #50b4f8;
+  }
+  .dropdown {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 32px;
+    background: #242934;
+    border: 1px solid #23272e;
+    box-shadow: 0 5px 15px #0007;
+    min-width: 172px;
+    z-index: 999;
+    padding: 4px 0;
+    border-radius: 4px;
+    animation: dropdown-in .15s cubic-bezier(.33,1,.68,1) both;
+  }
+  @keyframes dropdown-in {
+    from { opacity: 0; transform: translateY(-12px);}
+    to { opacity: 1; transform: none;}
+  }
+  .menu.open .dropdown { display: block; }
+  .dropdown button {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #b9c4d3;
+    padding: 8px 20px 8px 20px;
+    text-align: left;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.13s, color 0.13s;
+    border-radius: 0;
+  }
+  .dropdown button:hover {
+    background: #2a3547;
+    color: #50b4f8;
+  }
+  .dropdown .divider {
+    height: 1px;
+    background: #242934;
+    margin: 6px 0;
+    border: none;
+  }
+  @media (max-width: 600px) {
+    .menu-bar { font-size: 12px; }
+    .dropdown button { font-size: 12px; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="menu-bar">
+    <div class="menu" tabindex="0">
+      <button type="button">File</button>
+      <div class="dropdown">
+        <button id="menu-new-file">New File <span style="float:right;opacity:.7;">Ctrl+N</span></button>
+        <button id="menu-open-file">Open File… <span style="float:right;opacity:.7;">Ctrl+O</span></button>
+        <button id="menu-open-folder">Open Folder… <span style="float:right;opacity:.7;">Ctrl+Shift+O</span></button>
+        <button id="menu-save-file">Save <span style="float:right;opacity:.7;">Ctrl+S</span></button>
+        <hr class="divider">
+        <button id="menu-close-file">Close Tab <span style="float:right;opacity:.7;">Ctrl+W</span></button>
+        <button id="menu-exit">Exit</button>
+      </div>
+    </div>
+    <div class="menu" tabindex="0">
+      <button type="button">Edit</button>
+      <div class="dropdown">
+        <button id="menu-undo">Undo <span style="float:right;opacity:.7;">Ctrl+Z</span></button>
+        <button id="menu-redo">Redo <span style="float:right;opacity:.7;">Ctrl+Y</span></button>
+        <hr class="divider">
+        <button id="menu-cut">Cut <span style="float:right;opacity:.7;">Ctrl+X</span></button>
+        <button id="menu-copy">Copy <span style="float:right;opacity:.7;">Ctrl+C</span></button>
+        <button id="menu-paste">Paste <span style="float:right;opacity:.7;">Ctrl+V</span></button>
+        <hr class="divider">
+        <button id="menu-select-all">Select All <span style="float:right;opacity:.7;">Ctrl+A</span></button>
+      </div>
+    </div>
+    <div class="menu" tabindex="0">
+      <button type="button">View</button>
+      <div class="dropdown">
+        <button id="menu-toggle-sidebar">Toggle Sidebar</button>
+        <button id="menu-toggle-explorer">Toggle Explorer</button>
+      </div>
+    </div>
+    <div class="menu" tabindex="0">
+      <button type="button">Go</button>
+      <div class="dropdown">
+        <button id="menu-find">Find… <span style="float:right;opacity:.7;">Ctrl+F</span></button>
+        <button id="menu-replace">Replace… <span style="float:right;opacity:.7;">Ctrl+H</span></button>
+        <button id="menu-goto-file">Go to File… <span style="float:right;opacity:.7;">Ctrl+P</span></button>
+      </div>
+    </div>
+    <div class="menu" tabindex="0">
+      <button type="button">Help</button>
+      <div class="dropdown">
+        <button id="menu-about">About</button>
+        <button id="menu-shortcuts">Keyboard Shortcuts</button>
+      </div>
+    </div>
+  </div>
+  <div id="container">
+    <div class="sidebar">
+      <i class="mdi mdi-file-tree active" title="Explorer" id="sidebar-explorer-toggle"></i>
+      <i class="mdi mdi-magnify" title="Search (Ctrl+F)" id="sidebar-search-toggle"></i>
+    </div>
+    <div class="file-explorer" id="file-explorer-panel">
+      <div class="panel-header">EXPLORER</div>
+      <div class="files" id="file-list"></div>
+    </div>
+    <div class="main-content">
+      <div class="tabs" id="tabs-container"></div>
+      <div class="editor-pane" id="editor-pane"></div>
+    </div>
+  </div>
+  <script type="module" src="app.js"></script>
+  <script>
+    // Simple dropdown behaviour for menu bar
+    document.querySelectorAll('.menu').forEach(menu => {
+      menu.addEventListener('click', function(e) {
+        document.querySelectorAll('.menu').forEach(m => {
+          if (m !== menu) m.classList.remove('open');
+        });
+        menu.classList.toggle('open');
+        e.stopPropagation();
+      });
+      menu.addEventListener('blur', function() {
+        menu.classList.remove('open');
+      });
+    });
+    document.body.addEventListener('click', function() {
+      document.querySelectorAll('.menu').forEach(menu => menu.classList.remove('open'));
+    });
+    // Optional: Esc to close menus
+    window.addEventListener('keydown', function(e) {
+      if (e.key === "Escape") {
+        document.querySelectorAll('.menu').forEach(menu => menu.classList.remove('open'));
+      }
+    });
+    // Menu event wiring
+    window.addEventListener('DOMContentLoaded', () => {
+      // File
+      document.getElementById('menu-open-file')?.addEventListener('click', () => window.openFileDialog && window.openFileDialog());
+      document.getElementById('menu-open-folder')?.addEventListener('click', () => window.openFolderDialog && window.openFolderDialog());
+      document.getElementById('menu-save-file')?.addEventListener('click', () => window.saveFile && window.saveFile());
+      document.getElementById('menu-close-file')?.addEventListener('click', () => {
+        if (window.activeTab && window.closeTab) window.closeTab(window.activeTab);
+      });
+      // Edit
+      document.getElementById('menu-undo')?.addEventListener('click', () => window.currentEditorView && window.currentEditorView.dispatch({effects: EditorView.undo.of()}));
+      document.getElementById('menu-redo')?.addEventListener('click', () => window.currentEditorView && window.currentEditorView.dispatch({effects: EditorView.redo.of()}));
+      document.getElementById('menu-cut')?.addEventListener('click', () => document.execCommand('cut'));
+      document.getElementById('menu-copy')?.addEventListener('click', () => document.execCommand('copy'));
+      document.getElementById('menu-paste')?.addEventListener('click', () => document.execCommand('paste'));
+      document.getElementById('menu-select-all')?.addEventListener('click', () => window.currentEditorView && window.currentEditorView.dispatch({ selection: { anchor: 0, head: window.currentEditorView.state.doc.length } }));
+      // View (optional: wire up as needed)
+      document.getElementById('menu-toggle-sidebar')?.addEventListener('click', () => {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.style.display = (sidebar.style.display === 'none' ? 'flex' : 'none');
+      });
+      document.getElementById('menu-toggle-explorer')?.addEventListener('click', () => {
+        const explorer = document.getElementById('file-explorer-panel');
+        if (explorer) explorer.style.display = (explorer.style.display === 'none' ? 'flex' : 'none');
+      });
+      // Go
+      document.getElementById('menu-find')?.addEventListener('click', () => window.openSearch && window.openSearch());
+      document.getElementById('menu-goto-file')?.addEventListener('click', () => window.openFileDialog && window.openFileDialog());
+      // Help/About (optional)
+      document.getElementById('menu-about')?.addEventListener('click', () => alert("Code Editor\nBuilt with CodeMirror 6 + Vite"));
+      document.getElementById('menu-shortcuts')?.addEventListener('click', () => alert("Shortcuts:\nCtrl+N: New File\nCtrl+O: Open File\nCtrl+S: Save\nCtrl+F: Find\nCtrl+W: Close Tab\n..."));
+    });
+  </script>
+</body>
+</html>

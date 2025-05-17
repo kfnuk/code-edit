@@ -1,0 +1,212 @@
+:root {
+  --vscode-bg: #1e1e1e;
+  --vscode-sidebar: #23272e; /* Slightly different from original for distinction */
+  --vscode-dark: #252526;
+  --vscode-panel-header: #2c2c32; /* Added for panel headers */
+  --vscode-blue: #007acc;
+  --vscode-text: #d4d4d4;
+  --vscode-text-secondary: #848484;
+  --vscode-selection: #264f78;
+  --vscode-border: #3c3c3c;
+  --tab-active-bg: #1e1e1e; /* Editor background for active tab */
+  --tab-inactive-bg: #2d2d2d;
+  --tab-hover-bg: #333338;
+  --font-family: 'Fira Code', 'Consolas', 'Menlo', monospace;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--vscode-bg);
+  color: var(--vscode-text);
+  font-family: var(--font-family);
+  overflow: hidden; /* Prevent scrollbars on body */
+  font-size: 14px;
+}
+
+#container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.sidebar {
+  width: 48px; /* Standard VS Code activity bar width */
+  background: var(--vscode-sidebar);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  gap: 15px;
+  border-right: 1px solid var(--vscode-border);
+  flex-shrink: 0;
+}
+
+.sidebar i {
+  font-size: 24px; /* Standard icon size */
+  color: var(--vscode-text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 3px;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.sidebar i:hover {
+  color: var(--vscode-text);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.sidebar i.active {
+  color: var(--vscode-blue); /* Or white, depending on preference */
+}
+
+.file-explorer {
+  width: 250px;
+  min-width: 180px; /* Prevent it from getting too small */
+  background: var(--vscode-dark);
+  border-right: 1px solid var(--vscode-border);
+  display: flex; /* Initially visible */
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+.panel-header {
+  font-size: 11px; /* Smaller for panel headers */
+  padding: 8px 12px;
+  color: var(--vscode-text-secondary);
+  text-transform: uppercase;
+  font-weight: 500;
+  border-bottom: 1px solid var(--vscode-border);
+  flex-shrink: 0;
+}
+
+.files {
+  flex-grow: 1; /* Take remaining space */
+  overflow-y: auto; /* Scroll for file list */
+  padding: 5px 0;
+}
+
+.file {
+  padding: 4px 12px 4px 22px; /* Indent file names */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--vscode-text-secondary);
+  transition: background-color 0.1s, color 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file:hover {
+  background-color: var(--tab-hover-bg);
+  color: var(--vscode-text);
+}
+.file.active {
+  background-color: var(--vscode-selection); /* Or a specific active file color */
+  color: #fff;
+}
+.file i {
+  font-size: 16px;
+  margin-right: 6px;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Important for flex children to shrink properly */
+  background: var(--vscode-bg); /* Should be editor background */
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--vscode-border);
+  background: var(--vscode-dark); /* Background for the tab bar area */
+  height: 35px; /* Standard tab height */
+  flex-shrink: 0;
+  overflow-x: auto; /* Allow horizontal scrolling for many tabs */
+}
+/* Hide scrollbar for tabs, if desired, webkit specific */
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tabs {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+
+.tab {
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 13px;
+  height: 100%;
+  border-right: 1px solid var(--vscode-border);
+  color: var(--vscode-text-secondary);
+  background: var(--tab-inactive-bg);
+  white-space: nowrap;
+  position: relative;
+  gap: 6px; /* Gap between icon and text */
+}
+.tab:hover {
+  background: var(--tab-hover-bg);
+  color: var(--vscode-text);
+}
+.tab.active {
+  background: var(--tab-active-bg); /* Editor background */
+  color: var(--vscode-text);
+  border-bottom-color: transparent; /* Or an accent color like var(--vscode-blue) */
+}
+.tab .close {
+  font-size: 16px;
+  padding: 2px;
+  border-radius: 3px;
+  margin-left: 8px; /* Space before close button */
+  opacity: 0.7;
+}
+.tab .close:hover {
+  opacity: 1;
+  background-color: rgba(255,255,255,0.15);
+  color: #fff; /* Or a specific hover color for close */
+}
+.tab.active .close:hover {
+  background-color: rgba(255,255,255,0.2); /* Slightly different for active tab */
+}
+.tab i { /* Icon in tab */
+  font-size: 16px;
+}
+
+.editor-pane {
+  flex-grow: 1; /* Editor takes remaining vertical space */
+  overflow: hidden; /* CodeMirror will handle its own scrolling */
+  display: flex; /* To help CodeMirror fill it */
+}
+
+/* CodeMirror specific overrides if needed */
+.cm-editor {
+  height: 100% !important; /* Ensure CodeMirror fills the pane */
+  width: 100% !important;
+  outline: none !important;
+}
+.cm-scroller {
+  font-family: var(--font-family) !important;
+  font-size: 15px !important; /* As per your theme in JS */
+}
+.cm-activeLine {
+  background-color: rgba(80,80,110,0.18) !important; /* From your JS theme */
+}
+.cm-cursor {
+  border-left: 2px solid #fff !important; /* From your JS theme */
+}
+.cm-focused {
+  outline: none !important;
+}
+
+/* Search panel styling (optional, if default needs tweaking) */
+.cm-panel.cm-search {
+  /* Add custom styles if needed */
+}
