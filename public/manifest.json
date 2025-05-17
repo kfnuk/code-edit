@@ -1,7 +1,11 @@
 {
   "name": "Code Editor",
   "short_name": "CodeEditor",
+<<<<<<< HEAD
   "description": "A simple, installable code editor built with CodeMirror 6.",
+=======
+  "description": "A simple code editor built with CodeMirror 6.",
+>>>>>>> dcd70e8152c75bc8c93f38daee54902720b3bb87
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e1e1e",
