@@ -1,53 +1,104 @@
 /* General Resets and Root Variables */
 :root {
-  --vscode-bg: #1e1e1e;
-  --vscode-sidebar-bg: #23272e; /* For top menu and activity bar */
-  --vscode-activitybar-icons: #d4d4d4;
-  --vscode-activitybar-icons-hover-bg: #37373d;
-  --vscode-explorer-bg: #252526; /* File explorer background */
-  --vscode-panel-header: #2c2c32;
-  --vscode-blue-accent: #007acc;
-  --vscode-text-primary: #d4d4d4;
-  --vscode-text-secondary: #848484; /* For less prominent text */
-  --vscode-text-placeholder: #a0a0a0;
-  --vscode-selection-bg: #264f78;
-  --vscode-border-color: #3c3c3c;
-  --tab-active-bg: #1e1e1e;    /* Same as editor background */
-  --tab-inactive-bg: #2d2d2d;
-  --tab-hover-bg: #333338;
+  /* Dark Theme (Default) */
+  --theme-bg: #1e1e1e;
+  --theme-sidebar-bg: #23272e;
+  --theme-activitybar-icons: #d4d4d4;
+  --theme-activitybar-icons-hover-bg: #37373d;
+  --theme-explorer-bg: #252526;
+  --theme-panel-header-bg: #2c2c32;
+  --theme-panel-header-text: #848484;
+  --theme-blue-accent: #007acc;
+  --theme-text-primary: #d4d4d4;
+  --theme-text-secondary: #848484;
+  --theme-text-placeholder: #a0a0a0;
+  --theme-selection-bg: #264f78;
+  --theme-border-color: #3c3c3c;
+  --theme-tab-active-bg: #1e1e1e;
+  --theme-tab-inactive-bg: #2d2d2d;
+  --theme-tab-hover-bg: #333338;
+  --theme-modal-backdrop-bg: rgba(18, 18, 24, 0.85);
+  --theme-modal-bg: #2a2d38;
+  --theme-modal-text: #e6e9ef;
+  --theme-modal-key-text: #b5e0ff;
+  --theme-modal-row-hover-bg: rgba(42, 45, 56, 0.5);
+  --theme-button-hover-bg: var(--theme-blue-accent);
+  --theme-button-hover-text: #ffffff;
+  --theme-button-icon-hover-text: #ffffff;
+  --theme-cm-gutter-bg: var(--theme-explorer-bg); /* Default dark gutter */
+  --theme-cm-gutter-text: var(--theme-text-secondary);
+  --theme-cm-gutter-border: var(--theme-border-color);
+  --theme-cm-activeline-gutter-bg: rgba(80,80,110,0.18); /* From your original active line */
+
+
   --font-family-ui: 'Segoe UI', sans-serif;
   --font-family-editor: 'Fira Code', 'Consolas', 'Menlo', monospace;
 }
 
+/* Light Theme Variables */
+.light-theme {
+  --theme-bg: #f5f5f5;
+  --theme-sidebar-bg: #e8e8e8;
+  --theme-activitybar-icons: #4f4f4f;
+  --theme-activitybar-icons-hover-bg: #dcdcdc;
+  --theme-explorer-bg: #f3f3f3;
+  --theme-panel-header-bg: #e0e0e0;
+  --theme-panel-header-text: #555555;
+  --theme-blue-accent: #007acc;
+  --theme-text-primary: #1e1e1e;
+  --theme-text-secondary: #555555;
+  --theme-text-placeholder: #777777;
+  --theme-selection-bg: #add8e6;
+  --theme-border-color: #cccccc;
+  --theme-tab-active-bg: #f5f5f5;
+  --theme-tab-inactive-bg: #e7e7e7;
+  --theme-tab-hover-bg: #dadada;
+  --theme-modal-backdrop-bg: rgba(200, 200, 200, 0.75);
+  --theme-modal-bg: #ffffff;
+  --theme-modal-text: #333333;
+  --theme-modal-key-text: #005a9e;
+  --theme-modal-row-hover-bg: rgba(220, 220, 220, 0.5);
+  --theme-button-hover-bg: var(--theme-blue-accent);
+  --theme-button-hover-text: #ffffff;
+  --theme-button-icon-hover-text: #ffffff;
+  --theme-cm-gutter-bg: #f0f0f0; /* Light gutter */
+  --theme-cm-gutter-text: #888888;
+  --theme-cm-gutter-border: #dddddd;
+  --theme-cm-activeline-gutter-bg: #e0e0ff;
+}
+
+
 html, body {
   height: 100%;
   margin: 0;
-  background: var(--vscode-bg);
-  color: var(--vscode-text-primary);
-  font-family: var(--font-family-ui); /* UI font */
+  background: var(--theme-bg);
+  color: var(--theme-text-primary);
+  font-family: var(--font-family-ui);
   overflow: hidden;
   font-size: 14px;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-/* Top Menu Bar Styles (from your index.html) */
+/* Top Menu Bar Styles */
 .menu-bar {
   display: flex;
   align-items: center;
-  background: var(--vscode-sidebar-bg);
+  background: var(--theme-sidebar-bg);
   height: 32px;
   padding: 0 0 0 6px;
-  border-bottom: 1px solid var(--vscode-border); /* Use consistent border */
+  border-bottom: 1px solid var(--theme-border-color);
   font-family: var(--font-family-ui);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Softer shadow */
-  z-index: 1000; /* High z-index for menu */
-  position: relative; /* For dropdown positioning */
-  flex-shrink: 0; /* Prevent shrinking */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  z-index: 1000;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .hamburger {
   background: none;
   border: none;
-  color: var(--vscode-activitybar-icons);
+  color: var(--theme-activitybar-icons);
   font-size: 20px;
   padding: 0 14px 0 2px;
   cursor: pointer;
@@ -55,38 +106,40 @@ html, body {
   height: 32px;
   display: flex;
   align-items: center;
-  transition: background 0.14s;
+  transition: background 0.14s, color 0.3s;
 }
 
 .hamburger:focus,
 .hamburger:hover {
-  background: var(--vscode-activitybar-icons-hover-bg);
+  background: var(--theme-activitybar-icons-hover-bg);
   outline: none;
 }
 
 .vs-app-title {
-  font-size: 14px; /* Adjusted for consistency */
-  color: var(--vscode-text-primary);
-  margin-left: 8px; /* Increased margin */
-  letter-spacing: 0.02em; /* Adjusted spacing */
+  font-size: 14px;
+  color: var(--theme-text-primary);
+  margin-left: 8px;
+  letter-spacing: 0.02em;
   opacity: 0.95;
   font-weight: 500;
+  transition: color 0.3s;
 }
 
 .menu-dropdown {
   display: none;
   position: absolute;
   left: 8px;
-  top: 32px; /* Position below menu bar */
-  background: var(--vscode-sidebar-bg); /* Consistent background */
-  min-width: 220px; /* Slightly wider */
-  border: 1px solid var(--vscode-border); /* Consistent border */
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25); /* Enhanced shadow */
-  border-radius: 5px; /* Softer radius */
+  top: 32px;
+  background: var(--theme-sidebar-bg);
+  min-width: 220px;
+  border: 1px solid var(--theme-border-color);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  border-radius: 5px;
   font-family: var(--font-family-ui);
   animation: menuFadeIn .15s ease-out;
-  z-index: 1001; /* Above menu bar content */
-  padding: 6px 0; /* Adjusted padding */
+  z-index: 1001;
+  padding: 6px 0;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .menu-bar.menu-open .menu-dropdown {
@@ -95,12 +148,13 @@ html, body {
 
 .menu-section {
   margin: 2px 0;
-  border-bottom: 1px solid var(--vscode-border); /* Use consistent border */
-  padding-bottom: 4px; /* Spacing for section */
+  border-bottom: 1px solid var(--theme-border-color);
+  padding-bottom: 4px;
+  transition: border-color 0.3s;
 }
 .menu-section:last-child {
   border-bottom: none;
-  padding-bottom: 2px; /* Less padding for last section */
+  padding-bottom: 2px;
 }
 
 .menu-dropdown button {
@@ -109,9 +163,9 @@ html, body {
   width: 100%;
   background: none;
   border: none;
-  color: var(--vscode-text-secondary); /* Softer color */
-  font-size: 13px; /* Slightly smaller */
-  padding: 8px 20px 8px 25px; /* Adjusted padding */
+  color: var(--theme-text-secondary);
+  font-size: 13px;
+  padding: 8px 20px 8px 25px;
   font-family: inherit;
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
@@ -124,31 +178,33 @@ html, body {
 
 .menu-dropdown button i {
   font-size: 16px;
-  margin-right: 10px; /* Increased spacing */
-  color: var(--vscode-text-secondary); /* Icon color */
+  margin-right: 10px;
+  color: var(--theme-text-secondary);
   opacity: 0.85;
   min-width: 18px;
   text-align: center;
+  transition: color 0.12s;
 }
 
 .menu-dropdown button span.shortcut {
   margin-left: auto;
-  color: var(--vscode-text-placeholder); /* Softer shortcut color */
+  color: var(--theme-text-placeholder);
   font-size: 12px;
   opacity: 0.8;
   padding-left: 16px;
-  font-family: var(--font-family-editor); /* Editor font for shortcuts */
+  font-family: var(--font-family-editor);
+  transition: color 0.12s;
 }
 
 .menu-dropdown button:hover,
 .menu-dropdown button:focus {
-  background: var(--vscode-blue-accent); /* Accent color on hover */
-  color: #ffffff; /* White text on hover */
+  background: var(--theme-button-hover-bg);
+  color: var(--theme-button-hover-text);
   outline: none;
 }
 .menu-dropdown button:hover i,
 .menu-dropdown button:focus i {
-    color: #ffffff;
+    color: var(--theme-button-icon-hover-text);
 }
 
 
@@ -157,104 +213,109 @@ html, body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Modal Styles (from your index.html) */
+/* Modal Styles */
 .modal-backdrop {
-  display: none; /* Hidden by default */
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(18, 18, 24, 0.85); /* Darker, more translucent backdrop */
-  z-index: 2000; /* High z-index for modals */
+  background: var(--theme-modal-backdrop-bg);
+  z-index: 2000;
   align-items: center;
   justify-content: center;
-  opacity: 0; /* Start transparent for animation */
-  transition: opacity .18s ease-out;
+  opacity: 0;
+  transition: opacity .18s ease-out, background-color 0.3s;
 }
 
 .modal-backdrop.active {
   display: flex;
-  opacity: 1; /* Fade in */
+  opacity: 1;
 }
 
-.shortcut-modal { /* Reused for About modal too */
-  background: #2a2d38; /* Slightly lighter modal background */
-  border-radius: 6px; /* Consistent radius */
+.shortcut-modal {
+  background: var(--theme-modal-bg);
+  border-radius: 6px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.3);
-  padding: 28px 38px 24px 38px; /* Adjusted padding */
+  padding: 28px 38px 24px 38px;
   min-width: 350px;
-  max-width: 90vw; /* Max width relative to viewport */
-  color: var(--vscode-text-primary);
+  max-width: 90vw;
+  color: var(--theme-modal-text);
   font-family: var(--font-family-ui);
-  font-size: 14px; /* Base font size */
+  font-size: 14px;
   animation: modalScaleIn .20s ease-out;
-  max-height: 85vh; /* Max height */
-  overflow-y: auto; /* Scroll if content overflows */
+  max-height: 85vh;
+  overflow-y: auto;
   position: relative;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .shortcut-modal h2 {
   margin-top: 0;
-  margin-bottom: 20px; /* More space below title */
-  font-size: 20px; /* Slightly smaller title */
-  font-weight: 500; /* Adjusted weight */
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 500;
   letter-spacing: 0.01em;
   text-align: left;
-  color: var(--vscode-blue-accent); /* Accent color for title */
+  color: var(--theme-blue-accent);
+  transition: color 0.3s;
 }
 
 .shortcut-modal .shortcut-list {
   width: 100%;
-  margin-top: 8px; /* Adjusted margin */
+  margin-top: 8px;
   margin-bottom: 5px;
   border-collapse: collapse;
-  font-size: 13px; /* Smaller font for list */
+  font-size: 13px;
 }
 
 .shortcut-modal .shortcut-list th,
 .shortcut-modal .shortcut-list td {
-  padding: 6px 12px 6px 0; /* Adjusted padding */
+  padding: 6px 12px 6px 0;
   border: none;
   text-align: left;
-  font-family: var(--font-family-editor); /* Editor font for keys */
+  font-family: var(--font-family-editor);
+  transition: background-color 0.3s;
 }
 
 .shortcut-modal .shortcut-list th {
-  font-family: var(--font-family-ui); /* UI font for headers */
-  color: var(--vscode-blue-accent); /* Accent for table headers */
+  font-family: var(--font-family-ui);
+  color: var(--theme-blue-accent);
   font-weight: 500;
   font-size: 13px;
+  transition: color 0.3s;
 }
 
 .shortcut-modal .shortcut-list td.key {
-  color: #b5e0ff; /* Light blue for keys */
-  font-weight: 500; /* Adjusted weight */
+  color: var(--theme-modal-key-text);
+  font-weight: 500;
   font-family: var(--font-family-editor);
   letter-spacing: 0.03em;
+  transition: color 0.3s;
 }
 
 .shortcut-modal .shortcut-list tr:hover td {
-  background: rgba(42, 45, 56, 0.5); /* Subtle hover for rows */
+  background: var(--theme-modal-row-hover-bg);
 }
 
 .shortcut-modal .close-modal {
   position: absolute;
-  top: 12px; /* Adjusted position */
+  top: 12px;
   right: 12px;
-  font-size: 22px; /* Larger close icon */
-  color: var(--vscode-text-secondary);
+  font-size: 22px;
+  color: var(--theme-text-secondary);
   background: none;
   border: none;
   cursor: pointer;
   transition: color 0.13s, transform 0.1s;
   opacity: 0.7;
-  padding: 5px; /* Make it easier to click */
+  padding: 5px;
   line-height: 1;
 }
 
 .shortcut-modal .close-modal:hover {
-  color: #f27878; /* Red hover for close */
+  color: #f27878;
   opacity: 1;
   transform: scale(1.1);
 }
@@ -266,7 +327,7 @@ html, body {
 
 @media (max-width: 500px) {
   .shortcut-modal {
-    padding: 20px; /* Simpler padding for small screens */
+    padding: 20px;
     min-width: 90vw;
   }
   .shortcut-modal h2 {
@@ -275,29 +336,31 @@ html, body {
 }
 
 /* Main Application Layout Styles */
-#app-container { /* This is the new main container below the menu bar */
+#app-container {
   display: flex;
-  /* Calculate height to fill viewport below the 32px menu bar */
-  height: calc(100vh - 33px); /* 32px menu + 1px border */
+  height: calc(100vh - 33px); 
   width: 100vw;
-  position: relative; /* If needed for absolute positioning inside */
+  position: relative;
+  background-color: var(--theme-bg); 
+  transition: background-color 0.3s;
 }
 
-.sidebar-main { /* Renamed from .sidebar to avoid conflict */
+.sidebar-main { 
   width: 48px;
-  background: var(--vscode-sidebar-bg); /* Consistent with top menu */
+  background: var(--theme-sidebar-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 10px 0;
   gap: 15px;
-  border-right: 1px solid var(--vscode-border);
+  border-right: 1px solid var(--theme-border-color);
   flex-shrink: 0;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .sidebar-main i {
   font-size: 24px;
-  color: var(--vscode-text-secondary);
+  color: var(--theme-text-secondary);
   cursor: pointer;
   padding: 8px;
   border-radius: 3px;
@@ -305,33 +368,35 @@ html, body {
 }
 
 .sidebar-main i:hover {
-  color: var(--vscode-text-primary);
-  background-color: var(--vscode-activitybar-icons-hover-bg);
+  color: var(--theme-text-primary);
+  background-color: var(--theme-activitybar-icons-hover-bg);
 }
 .sidebar-main i.active {
-  color: var(--vscode-blue-accent);
+  color: var(--theme-blue-accent);
 }
 
 .file-explorer {
   width: 250px;
   min-width: 180px;
-  background: var(--vscode-explorer-bg);
-  border-right: 1px solid var(--vscode-border);
-  display: flex; /* Initially visible, can be toggled by JS */
+  background: var(--theme-explorer-bg);
+  border-right: 1px solid var(--theme-border-color);
+  display: flex; 
   flex-direction: column;
   flex-shrink: 0;
   overflow-y: auto;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .panel-header {
   font-size: 11px;
   padding: 8px 12px;
-  color: var(--vscode-text-secondary);
+  color: var(--theme-panel-header-text);
   text-transform: uppercase;
   font-weight: 500;
-  border-bottom: 1px solid var(--vscode-border);
+  border-bottom: 1px solid var(--theme-border-color);
   flex-shrink: 0;
-  background-color: var(--vscode-panel-header); /* Panel header background */
+  background-color: var(--theme-panel-header-bg);
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
 .files {
@@ -347,24 +412,27 @@ html, body {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--vscode-text-secondary);
+  color: var(--theme-text-secondary);
   transition: background-color 0.1s, color 0.1s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .file:hover {
-  background-color: var(--tab-hover-bg); /* Use tab hover for consistency */
-  color: var(--vscode-text-primary);
+  background-color: var(--theme-tab-hover-bg); 
+  color: var(--theme-text-primary);
 }
 .file.active {
-  background-color: var(--vscode-selection-bg);
-  color: #fff;
+  background-color: var(--theme-selection-bg);
+  color: #fff; 
+}
+.file.active i {
+    color: #fff; 
 }
 .file i {
   font-size: 16px;
-  margin-right: 6px; /* Original spacing */
-  color: inherit; /* Inherit color from .file for active state */
+  margin-right: 6px;
+  color: inherit; 
 }
 
 .main-content {
@@ -372,16 +440,18 @@ html, body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: var(--vscode-bg); /* Editor area background */
+  background: var(--theme-bg); 
+  transition: background-color 0.3s;
 }
 
-.tabs { /* Renamed from #tabs to .tabs for consistency, matches ID #tabs-container */
+.tabs { 
   display: flex;
-  border-bottom: 1px solid var(--vscode-border);
-  background: var(--vscode-explorer-bg); /* Match file explorer bg for tab bar */
+  border-bottom: 1px solid var(--theme-border-color);
+  background: var(--theme-explorer-bg); 
   height: 35px;
   flex-shrink: 0;
   overflow-x: auto;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tabs { -ms-overflow-style: none; scrollbar-width: none; }
@@ -393,21 +463,21 @@ html, body {
   cursor: pointer;
   font-size: 13px;
   height: 100%;
-  border-right: 1px solid var(--vscode-border);
-  color: var(--vscode-text-secondary);
-  background: var(--tab-inactive-bg);
+  border-right: 1px solid var(--theme-border-color);
+  color: var(--theme-text-secondary);
+  background: var(--theme-tab-inactive-bg);
   white-space: nowrap;
   position: relative;
   gap: 6px;
+  transition: background-color 0.1s, color 0.1s, border-color 0.3s;
 }
 .tab:hover {
-  background: var(--tab-hover-bg);
-  color: var(--vscode-text-primary);
+  background: var(--theme-tab-hover-bg);
+  color: var(--theme-text-primary);
 }
 .tab.active {
-  background: var(--tab-active-bg);
-  color: var(--vscode-text-primary);
-  /* border-bottom: 2px solid var(--vscode-blue-accent); */ /* Optional active tab indicator */
+  background: var(--theme-tab-active-bg);
+  color: var(--theme-text-primary);
 }
 .tab .close {
   font-size: 16px;
@@ -419,18 +489,18 @@ html, body {
 }
 .tab .close:hover {
   opacity: 1;
-  background-color: rgba(255,255,255,0.15);
+  background-color: rgba(128,128,128,0.25); 
 }
 .tab i {
   font-size: 16px;
-  color: inherit; /* Tab icon color matches tab text */
+  color: inherit; 
 }
 
 .editor-pane {
   flex-grow: 1;
   overflow: hidden;
-  display: flex; /* Helps CodeMirror fill the space */
-  position: relative; /* For any absolute positioned elements within editor */
+  display: flex; 
+  position: relative;
 }
 
 /* CodeMirror Specific Overrides */
@@ -438,17 +508,60 @@ html, body {
   height: 100% !important;
   width: 100% !important;
   outline: none !important;
-  font-family: var(--font-family-editor) !important; /* Ensure editor font is applied */
+  font-family: var(--font-family-editor) !important;
 }
 .cm-scroller {
   font-family: var(--font-family-editor) !important;
-  font-size: 15px !important; /* As per your JS theme */
+  font-size: 15px !important;
 }
-/* .cm-activeLine is often handled by the theme (e.g., oneDark) */
-/* .cm-cursor is also often handled by the theme */
 .cm-focused {
-  outline: none !important; /* Remove default focus outline if any */
+  outline: none !important; 
 }
 .cm-gutters {
-  user-select: none; /* Prevent text selection in gutters */
+  user-select: none; 
+  background-color: var(--theme-cm-gutter-bg) !important; 
+  color: var(--theme-cm-gutter-text) !important;
+  border-right: 1px solid var(--theme-cm-gutter-border) !important;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.cm-lineNumbers .cm-gutterElement {
+    color: var(--theme-text-placeholder) !important; 
+}
+.cm-activeLineGutter {
+    background-color: var(--theme-cm-activeline-gutter-bg) !important;
+}
+
+
+/* Dragover visual feedback */
+body.dragover-active {
+    outline: 2px dashed var(--theme-blue-accent);
+    outline-offset: -10px;
+}
+
+/* Styles for the tab name input during rename */
+.tab-name-input {
+  font-size: 1em;
+  font-family: inherit;
+  width: 95%;
+  border: 1px solid #409eff;
+  border-radius: 4px;
+  padding: 0 4px;
+  background: #fff;
+  color: #333;
+  outline: none;
+  margin-left: 2px;
+}
+
+.tab.active .tab-name-input {
+  background: #e6f7ff;
+  color: #222;
+}
+
+.tab-name-display {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+    flex: 1 1 auto;
 }

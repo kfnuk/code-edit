@@ -7,11 +7,7 @@
   
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#23272e">
-  <link rel="apple-touch-icon" href="/icons/icon-192x192.png"> <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
-  <link rel="alternate icon" type="image/png" href="/images/favicon.png">
-  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png"> <link rel="icon" type="image/svg+xml" href="/images/favicon.svg"> <link rel="alternate icon" type="image/png" href="/images/favicon.png"> <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
   <link href="https://fonts.googleapis.com/css?family=Fira+Code:400,500,700|Segoe+UI:400,500,700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="style.css">
@@ -42,6 +38,7 @@
         <button id="menu-find"><i class="mdi mdi-magnify"></i> Find/Replace <span class="shortcut">Ctrl+F</span></button>
       </div>
       <div class="menu-section">
+        <button id="menu-toggle-theme"><i class="mdi mdi-theme-light-dark"></i> Toggle Theme</button>
         <button id="menu-keyboard-shortcuts"><i class="mdi mdi-keyboard-outline"></i> Keyboard Shortcuts</button>
         <button id="menu-about"><i class="mdi mdi-information-outline"></i> About</button>
       </div>
@@ -62,65 +59,68 @@
         <tr><td>Undo</td><td class="key">Ctrl+Z</td></tr>
         <tr><td>Redo</td><td class="key">Ctrl+Y</td></tr>
         <tr><td>Find/Replace</td><td class="key">Ctrl+F</td></tr>
+        <tr><td>Toggle Theme</td><td class="key">Menu</td></tr>
       </table>
       <div style="margin-top:14px; color:#7fa5e0; font-size:13px;">Some shortcuts may require Cmd on Mac.</div>
     </div>
   </div>
 
   <div class="modal-backdrop" id="about-modal-backdrop">
-    <div class="shortcut-modal" id="about-modal"> <button class="close-modal" id="close-about-modal" aria-label="Close">&times;</button>
+    <div class="shortcut-modal" id="about-modal"> 
+      <button class="close-modal" id="close-about-modal" aria-label="Close">&times;</button>
       <h2 style="margin-bottom:0.3em;">Code Editor</h2>
       <div style="font-size:15px;color:#c3dafc;padding-bottom:6px;">
         A lightweight code editor.
       </div>
-      <p style="font-size:13px; color:#aaa;">Version 1.0.0</p>
+      <p style="font-size:13px; color:#aaa;">Version 1.1.0</p>
     </div>
   </div>
 
   <div id="app-container">
-    <div class="sidebar-main"> <i class="mdi mdi-file-tree active" title="Explorer" id="sidebar-explorer-toggle"></i>
+    <div class="sidebar-main"> 
+      <i class="mdi mdi-file-tree active" title="Explorer" id="sidebar-explorer-toggle"></i>
       <i class="mdi mdi-magnify" title="Search (Ctrl+F)" id="sidebar-search-toggle"></i>
       <i class="mdi mdi-content-save" title="Save File (Ctrl+S)" id="sidebar-save-file"></i>
     </div>
     <div class="file-explorer" id="file-explorer-panel">
       <div class="panel-header">EXPLORER</div>
       <div class="files" id="file-list">
-        </div>
+      </div>
     </div>
     <div class="main-content">
       <div class="tabs" id="tabs-container">
-        </div>
+      </div>
       <div class="editor-pane" id="editor-pane">
-        </div>
+      </div>
     </div>
   </div>
 
   <script type="module" src="app.js"></script>
   <script>
-    // Inline script for menu and modal interactivity (from your uploaded HTML)
+    // Inline script for menu and modal interactivity
     const menubar = document.getElementById('vs-menubar');
     const hamburger = document.getElementById('hamburger-menu');
     const menuDropdown = document.getElementById('menu-dropdown');
     
-    function closeMenus() { // Helper to close dropdown
+    function closeMenus() { 
         if (menubar) menubar.classList.remove('menu-open');
     }
 
     if (hamburger && menubar && menuDropdown) {
         hamburger.addEventListener('click', e => {
             menubar.classList.toggle('menu-open');
-            if (menubar.classList.contains('menu-open')) menuDropdown.focus();
+            if (menubar.classList.contains('menu-open')) menuDropdown.focus(); // For accessibility
             e.stopPropagation();
         });
-        menuDropdown.addEventListener('click', e => e.stopPropagation()); // Prevent closing when clicking inside
+        menuDropdown.addEventListener('click', e => e.stopPropagation()); 
     }
     
-    document.body.addEventListener('click', () => closeMenus()); // Close menu if clicking outside
+    document.body.addEventListener('click', () => closeMenus()); 
     
     window.addEventListener('keydown', e => {
         if (e.key === "Escape") {
             closeMenus();
-            closeShortcutModal(); // Also close modals on Escape
+            closeShortcutModal(); 
             closeAboutModal();
         }
     });
