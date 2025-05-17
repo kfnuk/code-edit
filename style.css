@@ -1,38 +1,291 @@
+/* General Resets and Root Variables */
 :root {
   --vscode-bg: #1e1e1e;
-  --vscode-sidebar: #23272e; /* Slightly different from original for distinction */
-  --vscode-dark: #252526;
-  --vscode-panel-header: #2c2c32; /* Added for panel headers */
-  --vscode-blue: #007acc;
-  --vscode-text: #d4d4d4;
-  --vscode-text-secondary: #848484;
-  --vscode-selection: #264f78;
-  --vscode-border: #3c3c3c;
-  --tab-active-bg: #1e1e1e; /* Editor background for active tab */
+  --vscode-sidebar-bg: #23272e; /* For top menu and activity bar */
+  --vscode-activitybar-icons: #d4d4d4;
+  --vscode-activitybar-icons-hover-bg: #37373d;
+  --vscode-explorer-bg: #252526; /* File explorer background */
+  --vscode-panel-header: #2c2c32;
+  --vscode-blue-accent: #007acc;
+  --vscode-text-primary: #d4d4d4;
+  --vscode-text-secondary: #848484; /* For less prominent text */
+  --vscode-text-placeholder: #a0a0a0;
+  --vscode-selection-bg: #264f78;
+  --vscode-border-color: #3c3c3c;
+  --tab-active-bg: #1e1e1e;    /* Same as editor background */
   --tab-inactive-bg: #2d2d2d;
   --tab-hover-bg: #333338;
-  --font-family: 'Fira Code', 'Consolas', 'Menlo', monospace;
+  --font-family-ui: 'Segoe UI', sans-serif;
+  --font-family-editor: 'Fira Code', 'Consolas', 'Menlo', monospace;
 }
 
 html, body {
   height: 100%;
   margin: 0;
   background: var(--vscode-bg);
-  color: var(--vscode-text);
-  font-family: var(--font-family);
-  overflow: hidden; /* Prevent scrollbars on body */
+  color: var(--vscode-text-primary);
+  font-family: var(--font-family-ui); /* UI font */
+  overflow: hidden;
   font-size: 14px;
 }
 
-#container {
+/* Top Menu Bar Styles (from your index.html) */
+.menu-bar {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  align-items: center;
+  background: var(--vscode-sidebar-bg);
+  height: 32px;
+  padding: 0 0 0 6px;
+  border-bottom: 1px solid var(--vscode-border); /* Use consistent border */
+  font-family: var(--font-family-ui);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Softer shadow */
+  z-index: 1000; /* High z-index for menu */
+  position: relative; /* For dropdown positioning */
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
-.sidebar {
-  width: 48px; /* Standard VS Code activity bar width */
-  background: var(--vscode-sidebar);
+.hamburger {
+  background: none;
+  border: none;
+  color: var(--vscode-activitybar-icons);
+  font-size: 20px;
+  padding: 0 14px 0 2px;
+  cursor: pointer;
+  border-radius: 3px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  transition: background 0.14s;
+}
+
+.hamburger:focus,
+.hamburger:hover {
+  background: var(--vscode-activitybar-icons-hover-bg);
+  outline: none;
+}
+
+.vs-app-title {
+  font-size: 14px; /* Adjusted for consistency */
+  color: var(--vscode-text-primary);
+  margin-left: 8px; /* Increased margin */
+  letter-spacing: 0.02em; /* Adjusted spacing */
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+.menu-dropdown {
+  display: none;
+  position: absolute;
+  left: 8px;
+  top: 32px; /* Position below menu bar */
+  background: var(--vscode-sidebar-bg); /* Consistent background */
+  min-width: 220px; /* Slightly wider */
+  border: 1px solid var(--vscode-border); /* Consistent border */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25); /* Enhanced shadow */
+  border-radius: 5px; /* Softer radius */
+  font-family: var(--font-family-ui);
+  animation: menuFadeIn .15s ease-out;
+  z-index: 1001; /* Above menu bar content */
+  padding: 6px 0; /* Adjusted padding */
+}
+
+.menu-bar.menu-open .menu-dropdown {
+  display: block;
+}
+
+.menu-section {
+  margin: 2px 0;
+  border-bottom: 1px solid var(--vscode-border); /* Use consistent border */
+  padding-bottom: 4px; /* Spacing for section */
+}
+.menu-section:last-child {
+  border-bottom: none;
+  padding-bottom: 2px; /* Less padding for last section */
+}
+
+.menu-dropdown button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--vscode-text-secondary); /* Softer color */
+  font-size: 13px; /* Slightly smaller */
+  padding: 8px 20px 8px 25px; /* Adjusted padding */
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  border-radius: 3px;
+  letter-spacing: 0.01em;
+  outline: none;
+  position: relative;
+  text-align: left;
+}
+
+.menu-dropdown button i {
+  font-size: 16px;
+  margin-right: 10px; /* Increased spacing */
+  color: var(--vscode-text-secondary); /* Icon color */
+  opacity: 0.85;
+  min-width: 18px;
+  text-align: center;
+}
+
+.menu-dropdown button span.shortcut {
+  margin-left: auto;
+  color: var(--vscode-text-placeholder); /* Softer shortcut color */
+  font-size: 12px;
+  opacity: 0.8;
+  padding-left: 16px;
+  font-family: var(--font-family-editor); /* Editor font for shortcuts */
+}
+
+.menu-dropdown button:hover,
+.menu-dropdown button:focus {
+  background: var(--vscode-blue-accent); /* Accent color on hover */
+  color: #ffffff; /* White text on hover */
+  outline: none;
+}
+.menu-dropdown button:hover i,
+.menu-dropdown button:focus i {
+    color: #ffffff;
+}
+
+
+@keyframes menuFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal Styles (from your index.html) */
+.modal-backdrop {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(18, 18, 24, 0.85); /* Darker, more translucent backdrop */
+  z-index: 2000; /* High z-index for modals */
+  align-items: center;
+  justify-content: center;
+  opacity: 0; /* Start transparent for animation */
+  transition: opacity .18s ease-out;
+}
+
+.modal-backdrop.active {
+  display: flex;
+  opacity: 1; /* Fade in */
+}
+
+.shortcut-modal { /* Reused for About modal too */
+  background: #2a2d38; /* Slightly lighter modal background */
+  border-radius: 6px; /* Consistent radius */
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+  padding: 28px 38px 24px 38px; /* Adjusted padding */
+  min-width: 350px;
+  max-width: 90vw; /* Max width relative to viewport */
+  color: var(--vscode-text-primary);
+  font-family: var(--font-family-ui);
+  font-size: 14px; /* Base font size */
+  animation: modalScaleIn .20s ease-out;
+  max-height: 85vh; /* Max height */
+  overflow-y: auto; /* Scroll if content overflows */
+  position: relative;
+}
+
+.shortcut-modal h2 {
+  margin-top: 0;
+  margin-bottom: 20px; /* More space below title */
+  font-size: 20px; /* Slightly smaller title */
+  font-weight: 500; /* Adjusted weight */
+  letter-spacing: 0.01em;
+  text-align: left;
+  color: var(--vscode-blue-accent); /* Accent color for title */
+}
+
+.shortcut-modal .shortcut-list {
+  width: 100%;
+  margin-top: 8px; /* Adjusted margin */
+  margin-bottom: 5px;
+  border-collapse: collapse;
+  font-size: 13px; /* Smaller font for list */
+}
+
+.shortcut-modal .shortcut-list th,
+.shortcut-modal .shortcut-list td {
+  padding: 6px 12px 6px 0; /* Adjusted padding */
+  border: none;
+  text-align: left;
+  font-family: var(--font-family-editor); /* Editor font for keys */
+}
+
+.shortcut-modal .shortcut-list th {
+  font-family: var(--font-family-ui); /* UI font for headers */
+  color: var(--vscode-blue-accent); /* Accent for table headers */
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.shortcut-modal .shortcut-list td.key {
+  color: #b5e0ff; /* Light blue for keys */
+  font-weight: 500; /* Adjusted weight */
+  font-family: var(--font-family-editor);
+  letter-spacing: 0.03em;
+}
+
+.shortcut-modal .shortcut-list tr:hover td {
+  background: rgba(42, 45, 56, 0.5); /* Subtle hover for rows */
+}
+
+.shortcut-modal .close-modal {
+  position: absolute;
+  top: 12px; /* Adjusted position */
+  right: 12px;
+  font-size: 22px; /* Larger close icon */
+  color: var(--vscode-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.13s, transform 0.1s;
+  opacity: 0.7;
+  padding: 5px; /* Make it easier to click */
+  line-height: 1;
+}
+
+.shortcut-modal .close-modal:hover {
+  color: #f27878; /* Red hover for close */
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+@keyframes modalScaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 500px) {
+  .shortcut-modal {
+    padding: 20px; /* Simpler padding for small screens */
+    min-width: 90vw;
+  }
+  .shortcut-modal h2 {
+    font-size: 18px;
+  }
+}
+
+/* Main Application Layout Styles */
+#app-container { /* This is the new main container below the menu bar */
+  display: flex;
+  /* Calculate height to fill viewport below the 32px menu bar */
+  height: calc(100vh - 33px); /* 32px menu + 1px border */
+  width: 100vw;
+  position: relative; /* If needed for absolute positioning inside */
+}
+
+.sidebar-main { /* Renamed from .sidebar to avoid conflict */
+  width: 48px;
+  background: var(--vscode-sidebar-bg); /* Consistent with top menu */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,8 +295,8 @@ html, body {
   flex-shrink: 0;
 }
 
-.sidebar i {
-  font-size: 24px; /* Standard icon size */
+.sidebar-main i {
+  font-size: 24px;
   color: var(--vscode-text-secondary);
   cursor: pointer;
   padding: 8px;
@@ -51,43 +304,44 @@ html, body {
   transition: color 0.2s, background-color 0.2s;
 }
 
-.sidebar i:hover {
-  color: var(--vscode-text);
-  background-color: rgba(255, 255, 255, 0.1);
+.sidebar-main i:hover {
+  color: var(--vscode-text-primary);
+  background-color: var(--vscode-activitybar-icons-hover-bg);
 }
-.sidebar i.active {
-  color: var(--vscode-blue); /* Or white, depending on preference */
+.sidebar-main i.active {
+  color: var(--vscode-blue-accent);
 }
 
 .file-explorer {
   width: 250px;
-  min-width: 180px; /* Prevent it from getting too small */
-  background: var(--vscode-dark);
+  min-width: 180px;
+  background: var(--vscode-explorer-bg);
   border-right: 1px solid var(--vscode-border);
-  display: flex; /* Initially visible */
+  display: flex; /* Initially visible, can be toggled by JS */
   flex-direction: column;
   flex-shrink: 0;
-  overflow-y: auto; /* Allow scrolling if content overflows */
+  overflow-y: auto;
 }
 
 .panel-header {
-  font-size: 11px; /* Smaller for panel headers */
+  font-size: 11px;
   padding: 8px 12px;
   color: var(--vscode-text-secondary);
   text-transform: uppercase;
   font-weight: 500;
   border-bottom: 1px solid var(--vscode-border);
   flex-shrink: 0;
+  background-color: var(--vscode-panel-header); /* Panel header background */
 }
 
 .files {
-  flex-grow: 1; /* Take remaining space */
-  overflow-y: auto; /* Scroll for file list */
+  flex-grow: 1;
+  overflow-y: auto;
   padding: 5px 0;
 }
 
 .file {
-  padding: 4px 12px 4px 22px; /* Indent file names */
+  padding: 4px 12px 4px 22px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -100,43 +354,37 @@ html, body {
   text-overflow: ellipsis;
 }
 .file:hover {
-  background-color: var(--tab-hover-bg);
-  color: var(--vscode-text);
+  background-color: var(--tab-hover-bg); /* Use tab hover for consistency */
+  color: var(--vscode-text-primary);
 }
 .file.active {
-  background-color: var(--vscode-selection); /* Or a specific active file color */
+  background-color: var(--vscode-selection-bg);
   color: #fff;
 }
 .file i {
   font-size: 16px;
-  margin-right: 6px;
+  margin-right: 6px; /* Original spacing */
+  color: inherit; /* Inherit color from .file for active state */
 }
 
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Important for flex children to shrink properly */
-  background: var(--vscode-bg); /* Should be editor background */
+  min-width: 0;
+  background: var(--vscode-bg); /* Editor area background */
 }
 
-.tabs {
+.tabs { /* Renamed from #tabs to .tabs for consistency, matches ID #tabs-container */
   display: flex;
   border-bottom: 1px solid var(--vscode-border);
-  background: var(--vscode-dark); /* Background for the tab bar area */
-  height: 35px; /* Standard tab height */
+  background: var(--vscode-explorer-bg); /* Match file explorer bg for tab bar */
+  height: 35px;
   flex-shrink: 0;
-  overflow-x: auto; /* Allow horizontal scrolling for many tabs */
+  overflow-x: auto;
 }
-/* Hide scrollbar for tabs, if desired, webkit specific */
-.tabs::-webkit-scrollbar {
-  display: none;
-}
-.tabs {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
+.tabs::-webkit-scrollbar { display: none; }
+.tabs { -ms-overflow-style: none; scrollbar-width: none; }
 
 .tab {
   padding: 0 10px;
@@ -150,63 +398,57 @@ html, body {
   background: var(--tab-inactive-bg);
   white-space: nowrap;
   position: relative;
-  gap: 6px; /* Gap between icon and text */
+  gap: 6px;
 }
 .tab:hover {
   background: var(--tab-hover-bg);
-  color: var(--vscode-text);
+  color: var(--vscode-text-primary);
 }
 .tab.active {
-  background: var(--tab-active-bg); /* Editor background */
-  color: var(--vscode-text);
-  border-bottom-color: transparent; /* Or an accent color like var(--vscode-blue) */
+  background: var(--tab-active-bg);
+  color: var(--vscode-text-primary);
+  /* border-bottom: 2px solid var(--vscode-blue-accent); */ /* Optional active tab indicator */
 }
 .tab .close {
   font-size: 16px;
   padding: 2px;
   border-radius: 3px;
-  margin-left: 8px; /* Space before close button */
+  margin-left: 8px;
   opacity: 0.7;
+  transition: opacity 0.1s, background-color 0.1s;
 }
 .tab .close:hover {
   opacity: 1;
   background-color: rgba(255,255,255,0.15);
-  color: #fff; /* Or a specific hover color for close */
 }
-.tab.active .close:hover {
-  background-color: rgba(255,255,255,0.2); /* Slightly different for active tab */
-}
-.tab i { /* Icon in tab */
+.tab i {
   font-size: 16px;
+  color: inherit; /* Tab icon color matches tab text */
 }
 
 .editor-pane {
-  flex-grow: 1; /* Editor takes remaining vertical space */
-  overflow: hidden; /* CodeMirror will handle its own scrolling */
-  display: flex; /* To help CodeMirror fill it */
+  flex-grow: 1;
+  overflow: hidden;
+  display: flex; /* Helps CodeMirror fill the space */
+  position: relative; /* For any absolute positioned elements within editor */
 }
 
-/* CodeMirror specific overrides if needed */
+/* CodeMirror Specific Overrides */
 .cm-editor {
-  height: 100% !important; /* Ensure CodeMirror fills the pane */
+  height: 100% !important;
   width: 100% !important;
   outline: none !important;
+  font-family: var(--font-family-editor) !important; /* Ensure editor font is applied */
 }
 .cm-scroller {
-  font-family: var(--font-family) !important;
-  font-size: 15px !important; /* As per your theme in JS */
+  font-family: var(--font-family-editor) !important;
+  font-size: 15px !important; /* As per your JS theme */
 }
-.cm-activeLine {
-  background-color: rgba(80,80,110,0.18) !important; /* From your JS theme */
-}
-.cm-cursor {
-  border-left: 2px solid #fff !important; /* From your JS theme */
-}
+/* .cm-activeLine is often handled by the theme (e.g., oneDark) */
+/* .cm-cursor is also often handled by the theme */
 .cm-focused {
-  outline: none !important;
+  outline: none !important; /* Remove default focus outline if any */
 }
-
-/* Search panel styling (optional, if default needs tweaking) */
-.cm-panel.cm-search {
-  /* Add custom styles if needed */
+.cm-gutters {
+  user-select: none; /* Prevent text selection in gutters */
 }
