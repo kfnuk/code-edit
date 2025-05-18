@@ -28,7 +28,9 @@
         <button id="menu-open-file"><i class="mdi mdi-folder-open-outline"></i> Open File… <span class="shortcut">Ctrl+O</span></button>
         <button id="menu-open-folder"><i class="mdi mdi-folder-outline"></i> Open Folder… <span class="shortcut">Ctrl+Shift+O</span></button>
         <button id="menu-save-file"><i class="mdi mdi-content-save-outline"></i> Save <span class="shortcut">Ctrl+S</span></button>
-        <button id="menu-save-as-file"><i class="mdi mdi-content-save-edit-outline"></i> Save As… <span class="shortcut">Ctrl+Shift+S</span></button> <button id="menu-close-file"><i class="mdi mdi-close-box-outline"></i> Close Tab <span class="shortcut">Ctrl+W</span></button>
+        <button id="menu-save-as-file"><i class="mdi mdi-content-save-edit-outline"></i> Save As… <span class="shortcut">Ctrl+Shift+S</span></button>
+        <button id="menu-rename-file"><i class="mdi mdi-form-textbox"></i> Rename File</button> 
+        <button id="menu-close-file"><i class="mdi mdi-close-box-outline"></i> Close Tab <span class="shortcut">Ctrl+W</span></button>
       </div>
       <div class="menu-section">
         <button id="menu-undo"><i class="mdi mdi-undo"></i> Undo <span class="shortcut">Ctrl+Z</span></button>
@@ -43,7 +45,8 @@
       </div>
       <div class="menu-section">
         <button id="menu-toggle-theme"><i class="mdi mdi-theme-light-dark"></i> Toggle Theme</button>
-        <button id="menu-toggle-autosave"><i class="mdi mdi-auto-fix"></i> Toggle Autosave <span id="autosave-status-menu"></span></button> <button id="menu-keyboard-shortcuts"><i class="mdi mdi-keyboard-outline"></i> Keyboard Shortcuts</button>
+        <button id="menu-toggle-autosave"><i class="mdi mdi-auto-fix"></i> Toggle Autosave <span id="autosave-status-menu"></span></button>
+        <button id="menu-keyboard-shortcuts"><i class="mdi mdi-keyboard-outline"></i> Keyboard Shortcuts</button>
         <button id="menu-about"><i class="mdi mdi-information-outline"></i> About</button>
       </div>
     </div>
@@ -59,11 +62,14 @@
         <tr><td>Open File</td><td class="key">Ctrl+O</td></tr>
         <tr><td>Open Folder</td><td class="key">Ctrl+Shift+O</td></tr>
         <tr><td>Save File</td><td class="key">Ctrl+S</td></tr>
-        <tr><td>Save As...</td><td class="key">Ctrl+Shift+S</td></tr> <tr><td>Close Tab</td><td class="key">Ctrl+W</td></tr>
+        <tr><td>Save As...</td><td class="key">Ctrl+Shift+S</td></tr>
+        <tr><td>Close Tab</td><td class="key">Ctrl+W</td></tr>
         <tr><td>Undo</td><td class="key">Ctrl+Z</td></tr>
         <tr><td>Redo</td><td class="key">Ctrl+Y</td></tr>
         <tr><td>Find/Replace</td><td class="key">Ctrl+F</td></tr>
         <tr><td>Toggle Theme</td><td class="key">Menu</td></tr>
+        {/* You could add a shortcut for Rename here if desired, e.g., F2 */}
+        {/* <tr><td>Rename File</td><td class="key">F2</td></tr> */}
       </table>
       <div style="margin-top:14px; color:#7fa5e0; font-size:13px;">Some shortcuts may require Cmd on Mac.</div>
     </div>
@@ -114,7 +120,6 @@
 
   <script type="module" src="app.js"></script>
   <script>
-    // Inline script for menu and modal interactivity (existing script, might need minor additions for new modals)
     const menubar = document.getElementById('vs-menubar');
     const hamburger = document.getElementById('hamburger-menu');
     const menuDropdown = document.getElementById('menu-dropdown');
@@ -139,11 +144,10 @@
             closeMenus();
             closeShortcutModal(); 
             closeAboutModal();
-            closeLanguageModal(); // Close language modal on Escape
+            closeLanguageModal();
         }
     });
 
-    // Keyboard Shortcuts Modal (existing)
     const shortcutBackdrop = document.getElementById('shortcut-modal-backdrop');
     const openShortcutModal = () => { if(shortcutBackdrop) shortcutBackdrop.classList.add('active'); };
     const closeShortcutModal = () => { if(shortcutBackdrop) shortcutBackdrop.classList.remove('active'); };
@@ -160,7 +164,6 @@
       if (e.target === shortcutBackdrop) closeShortcutModal();
     });
 
-    // About Modal (existing)
     const aboutBackdrop = document.getElementById('about-modal-backdrop');
     const openAboutModal = () => { if(aboutBackdrop) aboutBackdrop.classList.add('active'); };
     const closeAboutModal = () => { if(aboutBackdrop) aboutBackdrop.classList.remove('active'); };
@@ -177,18 +180,15 @@
       if (e.target === aboutBackdrop) closeAboutModal();
     });
 
-    // Language Modal (New)
     const languageModalBackdrop = document.getElementById('language-modal-backdrop');
     const openLanguageModal = () => { if(languageModalBackdrop) languageModalBackdrop.classList.add('active'); };
     const closeLanguageModal = () => { if(languageModalBackdrop) languageModalBackdrop.classList.remove('active'); };
 
-    // Event listener for opening language modal will be in app.js (attached to status-language)
     const closeLanguageBtn = document.getElementById('close-language-modal');
     if(closeLanguageBtn) closeLanguageBtn.addEventListener('click', closeLanguageModal);
     if(languageModalBackdrop) languageModalBackdrop.addEventListener('click', (e) => {
       if (e.target === languageModalBackdrop) closeLanguageModal();
     });
-
   </script>
 </body>
 </html>

@@ -615,31 +615,25 @@ body.dragover-active {
     outline-offset: -10px;
 }
 
-/* Styles for the tab name input during rename */
+/* Styles for the tab name input during rename (if not already present) */
 .tab-name-input {
-  font-size: 1em; /* Inherit tab font size */
+  font-size: inherit; /* Inherit tab font size */
   font-family: inherit; /* Inherit tab font family */
-  width: 95%; /* Take most of the tab width */
+  /* Adjust width as needed, considering icon and close button */
+  flex-grow: 1; /* Allow it to take available space if tab is flex container */
+  min-width: 80px;
   border: 1px solid var(--theme-blue-accent); /* Highlight with accent color */
-  border-radius: 4px;
-  padding: 0 4px; /* Small padding */
+  border-radius: 3px;
+  padding: 1px 4px; /* Small padding */
   background: var(--theme-bg); /* Match editor background */
   color: var(--theme-text-primary); /* Match editor text */
   outline: none;
-  margin-left: 2px; /* Align with where text was */
+  margin: 0 4px; /* Spacing around the input */
+  box-sizing: border-box;
 }
 
 .tab.active .tab-name-input { /* Slightly different style if active tab is renamed */
   background: var(--theme-tab-active-bg);
-}
-
-.tab-name-display {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer; /* Indicate it's clickable for rename */
-    user-select: none; /* Prevent text selection on name part */
-    flex: 1 1 auto; /* Allow it to take available space */
 }
 
 .status-bar {
