@@ -316,9 +316,8 @@ function renderEditor() {
   const initialLangExtension = tabData.lang || detectLang(tabData.name) || [];
   let specificFileExtensions = [];
   if (tabData.name.endsWith('.json')) {
-      if (typeof jsonParseLinter === 'function') {
-          specificFileExtensions.push(jsonParseLinter());
-      }
+    // PATCH: Disable JSON linter if it causes errors
+    // specificFileExtensions.push(jsonParseLinter());
   }
 
   try {
