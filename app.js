@@ -53,7 +53,7 @@ const availableLanguages = [
     { name: "JSON", extension: ".json", langFunc: () => json() },
     { name: "Python", extension: ".py", langFunc: () => python() },
     { name: "XML", extension: ".xml", langFunc: () => xml() },
-    { name: "Markdown", extension: ".md", langFunc: () => markdown({ base: javascript, codeLanguages: cmLanguages }) },
+    { name: "Markdown", extension: ".md", langFunc: () => markdown({ codeLanguages: cmLanguages }) },
     { name: "Plain Text", extension: ".txt", langFunc: () => [] }
 ];
 
@@ -91,7 +91,7 @@ function detectLang(identifier = "") {
     if (/\.css$/i.test(identifier)) return css();
     if (/\.json$/i.test(identifier)) return json();
     if (/\.xml$/i.test(identifier)) return xml();
-    if (/\.md$/i.test(identifier)) return markdown({ base: javascript, codeLanguages: cmLanguages });
+    if (/\.md$/i.test(identifier)) return markdown({ codeLanguages: cmLanguages });
     if (/\.py$/i.test(identifier)) return python();
     return [];
 }
